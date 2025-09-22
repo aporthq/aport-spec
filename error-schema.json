@@ -1,0 +1,72 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Error Response",
+  "description": "Schema for API error responses",
+  "type": "object",
+  "required": ["error", "message"],
+  "properties": {
+    "error": {
+      "type": "string",
+      "description": "Error type identifier",
+      "enum": [
+        "validation_error",
+        "not_found",
+        "unauthorized",
+        "forbidden",
+        "rate_limit_exceeded",
+        "internal_error",
+        "bad_request"
+      ],
+      "example": "not_found"
+    },
+    "message": {
+      "type": "string",
+      "description": "Human-readable error message",
+      "example": "Agent passport not found"
+    },
+    "details": {
+      "type": "object",
+      "description": "Additional error details",
+      "properties": {
+        "field": {
+          "type": "string",
+          "description": "Field that caused the error (for validation errors)"
+        },
+        "code": {
+          "type": "string",
+          "description": "Error code for programmatic handling"
+        },
+        "retryAfter": {
+          "type": "integer",
+          "description": "Seconds to wait before retrying (for rate limit errors)"
+        },
+        "limit": {
+          "type": "integer",
+          "description": "Rate limit that was exceeded"
+        },
+        "remaining": {
+          "type": "integer",
+          "description": "Remaining requests in current window"
+        },
+        "resetTime": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the rate limit window resets"
+        }
+      },
+      "additionalProperties": true
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp when the error occurred",
+      "example": "2024-01-15T10:30:00Z"
+    },
+    "requestId": {
+      "type": "string",
+      "description": "Unique identifier for the request",
+      "example": "req_123456789"
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,586 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Agent Passport",
+  "description": "Schema for AI agent passport data",
+  "type": "object",
+  "required": [
+    "agent_id",
+    "slug",
+    "name",
+    "owner_id",
+    "owner_type",
+    "owner_display",
+    "controller_type",
+    "claimed",
+    "role",
+    "description",
+    "capabilities",
+    "limits",
+    "regions",
+    "status",
+    "verification_status",
+    "assurance_level",
+    "contact",
+    "source",
+    "created_at",
+    "updated_at",
+    "version"
+  ],
+  "properties": {
+    "agent_id": {
+      "type": "string",
+      "pattern": "^ap_[a-zA-Z0-9_]+$",
+      "description": "Unique identifier for the agent",
+      "example": "ap_12345678"
+    },
+    "slug": {
+      "type": "string",
+      "description": "URL-friendly identifier for the agent",
+      "example": "customer-support-ai"
+    },
+    "name": {
+      "type": "string",
+      "description": "Human-readable name for the agent",
+      "example": "Customer Support AI"
+    },
+    "owner_id": {
+      "type": "string",
+      "pattern": "^(ap_org_|ap_user_)[a-zA-Z0-9_]+$",
+      "description": "Unique identifier for the owner (organization or user)",
+      "example": "ap_org_12345678"
+    },
+    "owner_type": {
+      "type": "string",
+      "enum": ["org", "user"],
+      "description": "Type of owner (organization or user)",
+      "example": "org"
+    },
+    "owner_display": {
+      "type": "string",
+      "description": "Display name of the owner",
+      "example": "Acme Corporation"
+    },
+    "controller_type": {
+      "type": "string",
+      "enum": ["org", "person"],
+      "description": "Type of controller (organization or person)",
+      "example": "org"
+    },
+    "claimed": {
+      "type": "boolean",
+      "description": "Whether the agent has been claimed by its owner",
+      "example": true
+    },
+    "role": {
+      "type": "string",
+      "description": "Agent's role or tier level",
+      "example": "Customer Support Agent"
+    },
+    "description": {
+      "type": "string",
+      "description": "Detailed description of the agent's purpose and capabilities",
+      "example": "AI agent specialized in customer support and ticket management"
+    },
+    "capabilities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Capability identifier",
+            "example": "payments.refund"
+          },
+          "params": {
+            "type": "object",
+            "description": "Optional parameters for the capability",
+            "additionalProperties": true,
+            "example": {
+              "max_amount": 5000,
+              "currency": "USD"
+            }
+          }
+        }
+      },
+      "description": "List of capabilities granted to the agent",
+      "example": [
+        {
+          "id": "payments.refund",
+          "params": {
+            "max_amount": 5000,
+            "currency": "USD"
+          }
+        },
+        {
+          "id": "data.export"
+        }
+      ]
+    },
+    "limits": {
+      "type": "object",
+      "description": "Operational limits for the agent",
+      "properties": {
+        "refund_usd_max_per_tx": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1000000,
+          "description": "Maximum refund amount per transaction in USD cents"
+        },
+        "refund_usd_daily_cap": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 10000000,
+          "description": "Maximum total refunds per day in USD cents"
+        },
+        "payout_usd_daily_cap": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100000000,
+          "description": "Maximum total payouts per day in USD cents"
+        },
+        "max_actions_per_min": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 10000,
+          "description": "Maximum actions allowed per minute"
+        },
+        "max_export_rows": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 1000000,
+          "description": "Maximum number of rows in data exports"
+        },
+        "allow_pii": {
+          "type": "boolean",
+          "description": "Whether the agent is allowed to access PII data"
+        },
+        "max_deploys_per_day": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 100,
+          "description": "Maximum deployments per day"
+        }
+      },
+      "additionalProperties": false
+    },
+    "regions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Z]{2}(-[A-Z]{2})?$"
+      },
+      "description": "Geographic regions where the agent is authorized to operate",
+      "example": ["US-CA", "US-NY", "EU-DE"]
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "active", "suspended", "revoked"],
+      "description": "Current status of the agent passport",
+      "example": "active"
+    },
+    "verification_status": {
+      "type": "string",
+      "enum": ["unverified", "email_verified", "github_verified"],
+      "description": "Verification status of the agent",
+      "example": "email_verified"
+    },
+    "verification_method": {
+      "type": "string",
+      "enum": ["email", "github_oauth"],
+      "description": "Method used for verification",
+      "example": "email"
+    },
+    "verification_evidence": {
+      "type": "object",
+      "description": "Evidence of verification",
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Verified email address"
+        },
+        "github_username": {
+          "type": "string",
+          "description": "GitHub username"
+        },
+        "github_org": {
+          "type": "string",
+          "description": "GitHub organization"
+        },
+        "verified_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When verification was completed"
+        }
+      },
+      "additionalProperties": false
+    },
+    "assurance_level": {
+      "type": "string",
+      "enum": ["L0", "L1", "L2", "L3", "L4KYC", "L4FIN"],
+      "description": "Assurance level of the agent",
+      "example": "L1"
+    },
+    "assurance_method": {
+      "type": "string",
+      "enum": [
+        "self",
+        "email",
+        "github",
+        "domain",
+        "kyc",
+        "kyb",
+        "financial_data"
+      ],
+      "description": "Method used for assurance verification",
+      "example": "email"
+    },
+    "assurance_verified_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When assurance was verified",
+      "example": "2024-01-15T10:30:00Z"
+    },
+    "contact": {
+      "type": "string",
+      "format": "email",
+      "description": "Contact email for the agent",
+      "example": "contact@ai-research.com"
+    },
+    "links": {
+      "type": "object",
+      "description": "Related links for the agent",
+      "properties": {
+        "homepage": {
+          "type": "string",
+          "format": "uri",
+          "description": "Homepage URL"
+        },
+        "docs": {
+          "type": "string",
+          "format": "uri",
+          "description": "Documentation URL"
+        },
+        "repo": {
+          "type": "string",
+          "format": "uri",
+          "description": "Repository URL"
+        }
+      },
+      "additionalProperties": false
+    },
+    "categories": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "support",
+          "commerce",
+          "devops",
+          "ops",
+          "analytics",
+          "marketing"
+        ]
+      },
+      "description": "Categories the agent belongs to",
+      "example": ["support", "commerce"]
+    },
+    "framework": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "n8n",
+          "LangGraph",
+          "CrewAI",
+          "AutoGen",
+          "OpenAI",
+          "LlamaIndex",
+          "Custom"
+        ]
+      },
+      "description": "Frameworks used by the agent",
+      "example": ["LangGraph", "OpenAI"]
+    },
+    "logo_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "URL to the agent's logo",
+      "example": "https://example.com/logo.png"
+    },
+    "source": {
+      "type": "string",
+      "enum": ["admin", "form", "crawler"],
+      "description": "How the passport was created",
+      "example": "admin"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp of creation",
+      "example": "2024-01-01T00:00:00Z"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp of last update",
+      "example": "2024-01-15T10:30:00Z"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Version of the passport schema",
+      "example": "1.0.0"
+    },
+    "model_info": {
+      "type": "object",
+      "description": "Information about the AI model used by the agent",
+      "properties": {
+        "model_refs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "provider": {
+                "type": "string",
+                "enum": ["OpenAI", "Anthropic", "Meta", "local"],
+                "description": "Model provider"
+              },
+              "id": {
+                "type": "string",
+                "description": "Model identifier",
+                "example": "gpt-4o-mini"
+              },
+              "version": {
+                "type": "string",
+                "description": "Model version",
+                "example": "2025-08-01"
+              },
+              "hash": {
+                "type": "string",
+                "description": "SHA256 hash of model artifact if local"
+              },
+              "modality": {
+                "type": "string",
+                "enum": ["text", "vision", "multimodal"],
+                "description": "Model modality"
+              },
+              "evals": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "description": "Evaluation name"
+                    },
+                    "score": {
+                      "oneOf": [{ "type": "number" }, { "type": "string" }],
+                      "description": "Evaluation score"
+                    },
+                    "date": {
+                      "type": "string",
+                      "format": "date",
+                      "description": "Evaluation date"
+                    }
+                  }
+                },
+                "description": "Model evaluation results"
+              },
+              "safety": {
+                "type": "object",
+                "properties": {
+                  "jailbreak": {
+                    "type": "string",
+                    "enum": ["low", "med", "high"],
+                    "description": "Jailbreak resistance level"
+                  },
+                  "toxicity": {
+                    "type": "string",
+                    "enum": ["low", "med", "high"],
+                    "description": "Toxicity level"
+                  }
+                },
+                "description": "Safety assessment"
+              }
+            }
+          },
+          "description": "Model references"
+        },
+        "tools": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Tool name",
+                "example": "payments"
+              },
+              "provider": {
+                "type": "string",
+                "description": "Tool provider",
+                "example": "Stripe"
+              },
+              "version": {
+                "type": "string",
+                "description": "Tool version"
+              },
+              "scopes": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Tool access scopes",
+                "example": ["refunds:write", "tickets:read"]
+              }
+            }
+          },
+          "description": "Tools available to the agent"
+        },
+        "provenance": {
+          "type": "object",
+          "properties": {
+            "repo": {
+              "type": "string",
+              "format": "uri",
+              "description": "Source repository URL"
+            },
+            "commit": {
+              "type": "string",
+              "description": "Git commit SHA"
+            },
+            "manifest_hash": {
+              "type": "string",
+              "description": "Repository manifest hash"
+            }
+          },
+          "description": "Source code provenance"
+        },
+        "data_access": {
+          "type": "object",
+          "properties": {
+            "pii": {
+              "type": "boolean",
+              "description": "Whether the agent accesses PII data"
+            },
+            "pci": {
+              "type": "boolean",
+              "description": "Whether the agent accesses PCI data"
+            },
+            "sources": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Data sources accessed by the agent",
+              "example": ["zendesk", "stripe", "s3://bucket"]
+            }
+          },
+          "description": "Data access information"
+        }
+      },
+      "additionalProperties": false
+    },
+    "registry_key_id": {
+      "type": "string",
+      "description": "Registry key identifier for active passports",
+      "example": "reg-2025-01"
+    },
+    "registry_sig": {
+      "type": "string",
+      "description": "Registry signature for active passports",
+      "example": "ed25519:base64(<canonical-bytes>)"
+    },
+    "canonical_hash": {
+      "type": "string",
+      "description": "SHA256 hash of canonical JSON (excluding signature fields)",
+      "example": "sha256:base64"
+    },
+    "mcp": {
+      "type": "object",
+      "properties": {
+        "servers": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^(https?://|urn:mcp:)",
+            "description": "MCP server URL or URN"
+          },
+          "maxItems": 50,
+          "description": "Allowed MCP servers",
+          "example": ["https://mcp.stripe.com", "urn:mcp:acme:helpdesk"]
+        },
+        "tools": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9_-]+\\.[a-zA-Z0-9_-]+\\.[a-zA-Z0-9_-]+$",
+            "description": "MCP tool in namespace.action format"
+          },
+          "maxItems": 200,
+          "description": "Allowed MCP tools",
+          "example": ["stripe.refunds.create", "notion.pages.export"]
+        }
+      },
+      "additionalProperties": false,
+      "description": "MCP (Model Context Protocol) allowlist configuration"
+    },
+    "evaluation": {
+      "type": "object",
+      "properties": {
+        "pack_id": {
+          "type": "string",
+          "description": "Policy pack identifier",
+          "example": "refunds.v1"
+        },
+        "assurance_ok": {
+          "type": "boolean",
+          "description": "Whether assurance level meets policy requirements"
+        },
+        "capability_ok": {
+          "type": "boolean",
+          "description": "Whether capabilities meet policy requirements"
+        },
+        "limits_ok": {
+          "type": "boolean",
+          "description": "Whether limits meet policy requirements"
+        },
+        "regions_ok": {
+          "type": "boolean",
+          "description": "Whether regions meet policy requirements"
+        },
+        "mcp_ok": {
+          "type": "boolean",
+          "description": "Whether MCP allowlist meets policy requirements"
+        },
+        "reasons": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Array of failure reasons if any checks fail"
+        }
+      },
+      "required": [
+        "pack_id",
+        "assurance_ok",
+        "capability_ok",
+        "limits_ok",
+        "regions_ok",
+        "mcp_ok",
+        "reasons"
+      ],
+      "additionalProperties": false,
+      "description": "Policy evaluation results (computed on create/update)"
+    },
+    "verified_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO timestamp when registry signature was computed",
+      "example": "2024-01-15T10:30:00Z"
+    }
+  },
+  "additionalProperties": false
+}

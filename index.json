@@ -1,0 +1,12 @@
+{
+  "version": "0.1.0",
+  "published_at": "2025-09-22T20:46:31Z",
+  "source_commit": "505250f76663dd0a653f9f237b763dfeaed9f3a5",
+  "specifications": [
+    {"name": "passport-schema", "path": "passport-schema.json", "description": "APort passport schema definition"},
+    {"name": "error-schema", "path": "error-schema.json", "description": "APort error schema definition"},
+    {"name": "rate-limiting", "path": "rate-limiting.md", "description": "Rate limiting specification"},
+    {"name": "transport-profile", "path": "transport-profile.md", "description": "Transport profile specification"},
+    {"name": "webhook-spec", "path": "webhook-spec.md", "description": "Webhook specification"}
+  ]
+}
