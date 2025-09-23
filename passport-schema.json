@@ -31,7 +31,7 @@
       "type": "string",
       "pattern": "^ap_[a-zA-Z0-9_]+$",
       "description": "Unique identifier for the agent",
-      "example": "ap_12345678"
+      "example": "agt_tmpl_mfuzqhwt_fkcm8445678"
     },
     "slug": {
       "type": "string",
