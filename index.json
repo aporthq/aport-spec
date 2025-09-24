@@ -1,7 +1,7 @@
 {
   "version": "0.1.0",
-  "published_at": "2025-09-22T20:46:31Z",
-  "source_commit": "505250f76663dd0a653f9f237b763dfeaed9f3a5",
+  "published_at": "2025-09-24T23:03:21Z",
+  "source_commit": "07d00d6d3e6a94367b40192a7841a27074c7bf6f",
   "specifications": [
     {"name": "passport-schema", "path": "passport-schema.json", "description": "APort passport schema definition"},
     {"name": "error-schema", "path": "error-schema.json", "description": "APort error schema definition"},

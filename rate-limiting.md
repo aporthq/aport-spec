@@ -83,7 +83,7 @@ Rate limits are configurable via environment variables:
 
 ### Successful Request
 ```bash
-curl -i "https://api.aport.io/api/verify/ap_123"
+curl -i "https://api.aport.io/api/verify/ap_128094d3"
 
 HTTP/1.1 200 OK
 X-RateLimit-Limit: 60
@@ -93,7 +93,7 @@ X-RateLimit-Window: 60
 Content-Type: application/json
 
 {
-  "agent_id": "ap_123",
+  "agent_id": "ap_128094d3",
   "status": "active",
   "owner": "AI Research Lab"
 }
@@ -101,7 +101,7 @@ Content-Type: application/json
 
 ### Rate Limited Request
 ```bash
-curl -i "https://api.aport.io/api/verify/ap_123"
+curl -i "https://api.aport.io/api/verify/ap_128094d3"
 
 HTTP/1.1 429 Too Many Requests
 X-RateLimit-Limit: 60

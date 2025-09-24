@@ -35,14 +35,14 @@ X-Webhook-Timestamp: 1640995200
   "event": "passport.updated",
   "timestamp": "2024-01-15T10:30:00Z",
   "data": {
-    "agent_id": "ap_123",
+    "agent_id": "ap_128094d3",
     "previous_status": "active",
     "current_status": "suspended",
     "reason": "Policy violation",
     "updated_by": "admin@example.com"
   },
   "passport": {
-    "agent_id": "ap_123",
+    "agent_id": "ap_128094d3",
     "owner": "AI Research Lab",
     "role": "Tier-1",
     "status": "suspended",

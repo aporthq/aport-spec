@@ -31,7 +31,7 @@
       "type": "string",
       "pattern": "^ap_[a-zA-Z0-9_]+$",
       "description": "Unique identifier for the agent",
-      "example": "ap_12345678"
+      "example": "ap_128094d345678"
     },
     "slug": {
       "type": "string",
@@ -121,13 +121,13 @@
       "type": "object",
       "description": "Operational limits for the agent",
       "properties": {
-        "refund_usd_max_per_tx": {
+        "refund_amount_max_per_tx": {
           "type": "number",
           "minimum": 0,
           "maximum": 1000000,
           "description": "Maximum refund amount per transaction in USD cents"
         },
-        "refund_usd_daily_cap": {
+        "refund_amount_daily_cap": {
           "type": "number",
           "minimum": 0,
           "maximum": 10000000,
