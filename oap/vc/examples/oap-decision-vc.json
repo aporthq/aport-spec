@@ -1,0 +1,37 @@
+{
+  "@context": [
+    "https://www.w3.org/2018/credentials/v1",
+    "https://github.com/aporthq/aport-spec/oap/vc/context-oap-v1.jsonld"
+  ],
+  "type": ["VerifiableCredential", "OAPDecisionReceipt"],
+  "credentialSubject": {
+    "decision_id": "550e8400-e29b-41d4-a716-446655440002",
+    "policy_id": "payments.refund.v1",
+    "agent_id": "550e8400-e29b-41d4-a716-446655440000",
+    "owner_id": "org_12345678",
+    "assurance_level": "L2",
+    "allow": true,
+    "reasons": [
+      {
+        "code": "oap.allowed",
+        "message": "Transaction within limits and policy requirements"
+      }
+    ],
+    "created_at": "2024-01-15T10:30:00Z",
+    "expires_in": 3600,
+    "passport_digest": "sha256:abcd1234efgh5678ijkl9012mnop3456qrst7890uvwx1234yzab5678cdef",
+    "signature": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "kid": "oap:registry:key-2025-01",
+    "decision_token": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9..."
+  },
+  "issuer": "https://api.aport.dev",
+  "issuanceDate": "2024-01-15T10:30:00Z",
+  "expirationDate": "2024-01-15T11:30:00Z",
+  "proof": {
+    "type": "Ed25519Signature2020",
+    "created": "2024-01-15T10:30:00Z",
+    "verificationMethod": "https://api.aport.dev/.well-known/oap/keys.json#key-2025-01",
+    "proofPurpose": "assertionMethod",
+    "jws": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJjcmVkZW50aWFsU3ViamVjdCI6eyJkZWNpc2lvbl9pZCI6IjU1MGU4NDAwLWUyOWItNDFkNC1hNzE2LTQ0NjY1NTQ0MDAwMiIsInBvbGljeV9pZCI6InBheW1lbnRzLnJlZnVuZC52MSIsInBhc3Nwb3J0X2lkIjoiNTUwZTg0MDAtZTI5Yi00MWQ0LWE3MTYtNDQ2NjU1NDQwMDAwIiwib3duZXJfaWQiOiJvcmdfMTIzNDU2NzgiLCJhc3N1cmFuY2VfbGV2ZWwiOiJMMiIsImFsbG93Ijp0cnVlLCJyZWFzb25zIjpbeyJjb2RlIjoib2FwLmFsbG93ZWQiLCJtZXNzYWdlIjoiVHJhbnNhY3Rpb24gd2l0aGluIGxpbWl0cyBhbmQgcG9saWN5IHJlcXVpcmVtZW50cyJ9XSwiaXNzdWVkX2F0IjoiMjAyNC0wMS0xNVQxMDozMDowMFoiLCJleHBpcmVzX2F0IjoiMjAyNC0wMS0xNVQxMTozMDowMFoiLCJwYXNzcG9ydF9kaWdlc3QiOiJzaGEyNTY6YWJjZDEyMzRlZmdoNTY3OGlqa2w5MDEybW5vcDM0NTZxcnN0Nzg5MHV2d3gxMjM0eXphYjU2NzhjZGVmIn0sImlzc3VlciI6Imh0dHBzOi8vYXBpLmFwb3J0LmRldiIsImlzc3VhbmNlRGF0ZSI6IjIwMjQtMDEtMTVUMTA6MzA6MDBaIiwiZXhwaXJhdGlvbkRhdGUiOiIyMDI0LTAxLTE1VDExOjMwOjAwWiJ9.signature"
+  }
+}

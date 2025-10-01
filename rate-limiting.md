@@ -2,139 +2,135 @@
 
 ## Overview
 
-The AI Agent Passport Registry implements sliding window rate limiting to protect against abuse and ensure fair usage.
+The Open Agent Passport (OAP) API implements comprehensive rate limiting to ensure fair usage and system stability. This document defines the rate limiting rules, headers, and enforcement mechanisms.
 
-## Rate Limits
+## Rate Limiting Headers
 
-### Anonymous Endpoints
-- **Verify Endpoints**: 60 requests per minute per IP
-- **Endpoints**: `/api/verify`, `/api/verify-compact`
+### Standard Headers
 
-### Admin Endpoints
-- **All Admin Endpoints**: 100 requests per minute per IP
-- **Endpoints**: `/api/admin/*`, `/api/metrics`
-
-## Headers
-
-### Rate Limit Headers
-All rate-limited endpoints return the following headers:
+All API responses include the following rate limiting headers:
 
 ```
-X-RateLimit-Limit: 60
-X-RateLimit-Remaining: 59
+X-RateLimit-Limit: 1000
+X-RateLimit-Remaining: 999
 X-RateLimit-Reset: 1640995200
-X-RateLimit-Window: 60
+X-RateLimit-Window: 3600
 ```
 
-### Header Descriptions
-- `X-RateLimit-Limit`: Maximum requests allowed per window
-- `X-RateLimit-Remaining`: Requests remaining in current window
-- `X-RateLimit-Reset`: Unix timestamp when the window resets
-- `X-RateLimit-Window`: Window size in seconds
+### Header Definitions
 
-## Rate Limit Exceeded Response
+- **X-RateLimit-Limit**: Maximum number of requests allowed in the current window
+- **X-RateLimit-Remaining**: Number of requests remaining in the current window
+- **X-RateLimit-Reset**: Unix timestamp when the current window resets
+- **X-RateLimit-Window**: Duration of the rate limit window in seconds
 
-When rate limit is exceeded, the API returns:
+## Rate Limits by Endpoint
+
+### Verification Endpoints
+
+| Endpoint | Limit | Window | Notes |
+|----------|-------|--------|-------|
+| `/api/verify/{agent_id}` | 1000 | 1 hour | Per agent ID |
+| `/api/verify/policy/{pack_id}` | 500 | 1 hour | Per policy pack |
+| `/api/verify/decisions/{agent_id}` | 100 | 1 hour | Per agent ID |
+
+### Passport Management
+
+| Endpoint | Limit | Window | Notes |
+|----------|-------|--------|-------|
+| `/api/passports` (POST) | 10 | 1 hour | Per owner |
+| `/api/passports/{agent_id}` (PUT) | 50 | 1 hour | Per agent ID |
+| `/api/passports/{agent_id}/status` (PUT) | 20 | 1 hour | Per agent ID |
+
+### Public Endpoints
+
+| Endpoint | Limit | Window | Notes |
+|----------|-------|--------|-------|
+| `/api/verify/attestation/{id}` | 2000 | 1 hour | Public endpoint |
+| `/api/policies/{policy_name}` | 1000 | 1 hour | Public policy lookup |
+
+## Rate Limiting Strategies
+
+### Tiered Limiting
+
+Rate limits are applied in tiers:
+
+1. **Global Rate Limit**: 10,000 requests per hour per IP
+2. **Endpoint Rate Limit**: Specific limits per endpoint
+3. **User Rate Limit**: Additional limits for authenticated users
+4. **Agent Rate Limit**: Limits specific to agent operations
+
+### Burst Allowance
+
+Short-term burst requests are allowed:
+
+- **Burst Factor**: 2x the normal rate limit
+- **Burst Window**: 1 minute
+- **Burst Reset**: 5 minutes
+
+## Error Responses
+
+### Rate Limit Exceeded
+
+When rate limits are exceeded, the API returns:
 
 ```json
 {
-  "error": "Rate limit exceeded",
-  "message": "Too many requests. Please try again later.",
-  "retryAfter": 30,
-  "limit": 60,
-  "remaining": 0,
-  "resetTime": "2024-01-01T00:00:00Z"
-}
-```
-
-**Status Code**: `429 Too Many Requests`
-
-## Implementation Details
-
-### Sliding Window Algorithm
-- Uses Cloudflare KV for distributed rate limiting
-- Window slides every second
-- Counters are automatically cleaned up after window expires
-
-### Client Identification
-- Primary: Client IP address
-- Fallback: User-Agent + IP combination for edge cases
-
-### Configuration
-Rate limits are configurable via environment variables:
-- `VERIFY_RPM`: Verify endpoint rate limit (default: 60)
-- `ADMIN_RPM`: Admin endpoint rate limit (default: 100)
-
-## Best Practices
-
-### For API Consumers
-1. **Respect Rate Limits**: Check `X-RateLimit-Remaining` header
-2. **Implement Backoff**: Use exponential backoff when rate limited
-3. **Cache Responses**: Use ETag headers for efficient caching
-4. **Monitor Usage**: Track your API usage patterns
-
-### For Developers
-1. **Test Rate Limits**: Include rate limiting in integration tests
-2. **Handle 429 Responses**: Implement proper retry logic
-3. **Monitor Headers**: Log rate limit headers for debugging
-4. **Optimize Requests**: Batch requests when possible
-
-## Examples
-
-### Successful Request
-```bash
-curl -i "https://api.aport.io/api/verify/ap_128094d3"
-
-HTTP/1.1 200 OK
-X-RateLimit-Limit: 60
-X-RateLimit-Remaining: 59
-X-RateLimit-Reset: 1640995200
-X-RateLimit-Window: 60
-Content-Type: application/json
-
-{
-  "agent_id": "ap_128094d3",
-  "status": "active",
-  "owner": "AI Research Lab"
-}
-```
-
-### Rate Limited Request
-```bash
-curl -i "https://api.aport.io/api/verify/ap_128094d3"
-
-HTTP/1.1 429 Too Many Requests
-X-RateLimit-Limit: 60
-X-RateLimit-Remaining: 0
-X-RateLimit-Reset: 1640995200
-X-RateLimit-Window: 60
-Retry-After: 30
-Content-Type: application/json
-
-{
-  "error": "Rate limit exceeded",
-  "message": "Too many requests. Please try again later.",
-  "retryAfter": 30
-}
-```
-
-## Monitoring
-
-Rate limiting metrics are available via the `/api/metrics` endpoint:
-
-```json
-{
-  "rateLimiting": {
-    "verify": {
-      "totalRequests": 1250,
-      "rateLimitedRequests": 15,
-      "rateLimitPercentage": 1.2
-    },
-    "admin": {
-      "totalRequests": 340,
-      "rateLimitedRequests": 2,
-      "rateLimitPercentage": 0.6
-    }
+  "error": "rate_limit_exceeded",
+  "message": "Rate limit exceeded. Please try again later.",
+  "retry_after": 3600,
+  "rate_limit_info": {
+    "limit": 1000,
+    "remaining": 0,
+    "reset": 1640995200,
+    "window": 3600
   }
 }
 ```
+
+### HTTP Status Codes
+
+- **429 Too Many Requests**: Rate limit exceeded
+- **503 Service Unavailable**: System overload protection
+
+## Implementation Notes
+
+### Distributed Rate Limiting
+
+Rate limiting is implemented using:
+
+- **Redis**: For distributed rate limit counters
+- **Sliding Window**: For smooth rate limit enforcement
+- **Token Bucket**: For burst allowance
+
+### Monitoring
+
+Rate limiting metrics are tracked:
+
+- Requests per second by endpoint
+- Rate limit violations by IP/user
+- System load and performance impact
+
+## Best Practices
+
+### Client Implementation
+
+1. **Respect Headers**: Always check rate limit headers
+2. **Exponential Backoff**: Implement retry with backoff
+3. **Caching**: Cache responses to reduce API calls
+4. **Batching**: Combine multiple requests when possible
+
+### Error Handling
+
+1. **Retry Logic**: Implement intelligent retry mechanisms
+2. **Fallback**: Have fallback strategies for rate limit scenarios
+3. **Monitoring**: Track rate limit usage and violations
+
+## Compliance
+
+This rate limiting specification ensures:
+
+- **Fair Usage**: Prevents abuse while allowing legitimate use
+- **System Stability**: Protects against overload
+- **Scalability**: Supports high-volume operations
+- **Transparency**: Clear communication of limits and status

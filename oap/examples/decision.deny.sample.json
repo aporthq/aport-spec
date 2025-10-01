@@ -1,0 +1,23 @@
+{
+  "decision_id": "550e8400-e29b-41d4-a716-446655440003",
+  "policy_id": "payments.refund.v1",
+  "agent_id": "550e8400-e29b-41d4-a716-446655440001",
+  "owner_id": "org_87654321",
+  "assurance_level": "L3",
+  "allow": false,
+  "reasons": [
+    {
+      "code": "oap.limit_exceeded",
+      "message": "Transaction amount exceeds daily limit"
+    },
+    {
+      "code": "oap.currency_unsupported",
+      "message": "Currency JPY not supported for this passport"
+    }
+  ],
+  "created_at": "2024-01-15T10:30:00Z",
+  "expires_in": 3600,
+  "passport_digest": "sha256:abcd1234efgh5678ijkl9012mnop3456qrst7890uvwx1234yzab5678cdef",
+  "signature": "ed25519:efgh5678ijkl9012mnop3456qrst7890uvwx1234yzab5678cdefabcd1234==",
+  "kid": "oap:registry:key-2025-01"
+}

@@ -1,0 +1,9 @@
+{
+  "amount": 1000,
+  "currency": "JPY",
+  "order_id": "order_123456791",
+  "customer_id": "cust_987654323",
+  "reason_code": "customer_request",
+  "region": "US",
+  "idempotency_key": "refund_20240115_003"
+}

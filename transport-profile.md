@@ -1,323 +1,325 @@
-# Transport Profile Specification v0
+# Transport Profile Specification
 
 ## Overview
 
-The Transport Profile defines standardized methods for passing and consuming `agent_id` across different transport protocols and platforms. This ensures consistent agent identification regardless of the underlying technology stack.
+The Transport Profile defines how AI agents identify themselves and communicate their Open Agent Passport (OAP) credentials across different transport mechanisms. This specification ensures consistent agent identification regardless of the underlying communication protocol.
 
-## Transport Methods
+## Transport Mechanisms
 
-### HTTP/Webhooks
+### HTTP/HTTPS
 
-#### Header Format
+The primary transport mechanism for web-based agent interactions.
+
+#### Headers
+
+Agents must include the following headers in HTTP requests:
+
 ```
-X-Agent-Passport-Id: <agent_id>
+X-Agent-Passport: aeebc92d-13fb-4e23-8c3c-1aa82b167da6
+X-Agent-Signature: ed25519:abc123def456...
+X-Agent-Timestamp: 1640995200
+X-Agent-Nonce: nonce_123456789
 ```
 
-#### Example Request
-```http
-GET /api/data HTTP/1.1
-Host: api.example.com
-X-Agent-Passport-Id: ap_1234567890abcdef
-Authorization: Bearer <token>
-Content-Type: application/json
-```
+#### Header Definitions
 
-#### Example Response
-```http
-HTTP/1.1 200 OK
-Content-Type: application/json
-X-Agent-Passport-Id: ap_1234567890abcdef
-Cache-Control: public, max-age=60
-ETag: "agent_passport_v1_abc123"
+- **X-Agent-Passport**: The agent's passport ID
+- **X-Agent-Signature**: Ed25519 signature of the request
+- **X-Agent-Timestamp**: Unix timestamp of the request
+- **X-Agent-Nonce**: Unique nonce for replay protection
 
+### WebSocket
+
+For real-time agent communications.
+
+#### Connection Handshake
+
+```json
 {
-  "data": "...",
-  "agent_verified": true
+  "type": "agent_handshake",
+  "passport_id": "aeebc92d-13fb-4e23-8c3c-1aa82b167da6",
+  "signature": "ed25519:abc123def456...",
+  "timestamp": 1640995200,
+  "nonce": "nonce_123456789",
+  "capabilities": ["payments.refund", "data.export"]
+}
+```
+
+#### Message Format
+
+```json
+{
+  "type": "agent_message",
+  "passport_id": "aeebc92d-13fb-4e23-8c3c-1aa82b167da6",
+  "message_id": "msg_123456789",
+  "payload": {
+    // Message content
+  },
+  "signature": "ed25519:xyz789...",
+  "timestamp": 1640995200
 }
 ```
 
 ### gRPC
 
-#### Metadata Format
-```
-x-agent-passport-id: <agent_id>
-```
+For high-performance agent-to-agent communication.
 
-#### Example gRPC Call
+#### Service Definition
+
 ```protobuf
-// Client metadata
-metadata = {
-    "x-agent-passport-id": "ap_1234567890abcdef",
-    "authorization": "Bearer <token>"
+service AgentService {
+  rpc Identify(AgentIdentity) returns (AgentResponse);
+  rpc Execute(AgentRequest) returns (AgentResponse);
+  rpc Verify(VerificationRequest) returns (VerificationResponse);
 }
 
-// Server can access via context
-agent_id := metadata.Get("x-agent-passport-id")
-```
-
-### WebSocket/Server-Sent Events (SSE)
-
-#### Connection Parameters
-```
-ws://api.example.com/stream?agent_id=ap_1234567890abcdef
-```
-
-#### First Message Requirement
-The first message sent over the connection must contain the `agent_id` for verification:
-
-```json
-{
-  "type": "handshake",
-  "agent_id": "ap_1234567890abcdef",
-  "timestamp": "2024-01-15T10:30:00Z"
+message AgentIdentity {
+  string passport_id = 1;
+  string signature = 2;
+  int64 timestamp = 3;
+  string nonce = 4;
+  repeated string capabilities = 5;
 }
-```
-
-#### Example WebSocket Connection
-```javascript
-const ws = new WebSocket('ws://api.example.com/stream?agent_id=ap_1234567890abcdef');
-
-ws.onopen = function() {
-  // Send handshake with agent_id
-  ws.send(JSON.stringify({
-    type: 'handshake',
-    agent_id: 'ap_1234567890abcdef',
-    timestamp: new Date().toISOString()
-  }));
-};
 ```
 
 ### Message Queues
 
-#### Message Attribute Format
+For asynchronous agent communication.
+
+#### Message Structure
+
 ```json
 {
-  "MessageAttributes": {
-    "agent_id": {
-      "StringValue": "ap_1234567890abcdef",
-      "DataType": "String"
-    }
+  "headers": {
+    "x-agent-passport": "aeebc92d-13fb-4e23-8c3c-1aa82b167da6",
+    "x-agent-signature": "ed25519:abc123def456...",
+    "x-agent-timestamp": "1640995200",
+    "x-agent-nonce": "nonce_123456789"
   },
-  "MessageBody": "..."
+  "body": {
+    // Message payload
+  }
 }
 ```
 
-#### Example AWS SQS Message
+## Agent Identification
+
+### Passport ID Format
+
+Agent passport IDs follow this format:
+
+```
+ap_[a-zA-Z0-9]{8,16}
+```
+
+Examples:
+- `aeebc92d-13fb-4e23-8c3c-1aa82b167da6`
+- `ap_abc123def456`
+- `ap_myagent001`
+
+### Signature Generation
+
+All agent communications must be signed using Ed25519:
+
+```javascript
+const crypto = require('crypto');
+
+function signRequest(passportId, privateKey, timestamp, nonce, payload) {
+  const message = `${passportId}:${timestamp}:${nonce}:${JSON.stringify(payload)}`;
+  const signature = crypto
+    .createSign('ed25519')
+    .update(message)
+    .sign(privateKey);
+  return `ed25519:${signature.toString('hex')}`;
+}
+```
+
+### Timestamp Validation
+
+Timestamps must be:
+
+- **Current**: Within 5 minutes of current time
+- **Monotonic**: Never decrease for the same agent
+- **Format**: Unix timestamp in seconds
+
+### Nonce Requirements
+
+Nonces must be:
+
+- **Unique**: Never reused for the same agent
+- **Random**: Cryptographically secure random generation
+- **Format**: `nonce_[a-zA-Z0-9]{16,32}`
+
+## Transport Security
+
+### TLS Requirements
+
+All agent communications must use TLS 1.3 or higher:
+
+- **Minimum Version**: TLS 1.3
+- **Cipher Suites**: Only approved cipher suites
+- **Certificate Validation**: Full certificate chain validation
+- **Perfect Forward Secrecy**: Required for all connections
+
+### Signature Verification
+
+Receiving systems must verify agent signatures:
+
+```javascript
+function verifySignature(passportId, signature, publicKey, timestamp, nonce, payload) {
+  const message = `${passportId}:${timestamp}:${nonce}:${JSON.stringify(payload)}`;
+  const sig = signature.replace('ed25519:', '');
+  
+  return crypto
+    .createVerify('ed25519')
+    .update(message)
+    .verify(publicKey, Buffer.from(sig, 'hex'));
+}
+```
+
+### Replay Protection
+
+Implement replay protection using:
+
+1. **Nonce Tracking**: Store used nonces for 24 hours
+2. **Timestamp Windows**: Reject requests outside time window
+3. **Sequence Numbers**: Optional sequence number validation
+
+## Agent Discovery
+
+### Service Discovery
+
+Agents can discover other agents through:
+
+#### DNS SRV Records
+
+```
+_agent._tcp.example.com. 300 IN SRV 10 5 443 agent1.example.com.
+_agent._tcp.example.com. 300 IN SRV 20 5 443 agent2.example.com.
+```
+
+#### mDNS/Bonjour
+
+```
+_agent._tcp.local. PTR agent1._agent._tcp.local.
+agent1._agent._tcp.local. SRV 0 0 443 agent1.local.
+agent1._agent._tcp.local. TXT "passport=aeebc92d-13fb-4e23-8c3c-1aa82b167da6"
+```
+
+### Agent Registry
+
+Centralized agent discovery service:
+
 ```json
 {
-  "Records": [
+  "agents": [
     {
-      "messageAttributes": {
-        "agent_id": {
-          "stringValue": "ap_1234567890abcdef",
-          "dataType": "String"
-        }
-      },
-      "body": "{\"action\": \"process_data\", \"data\": \"...\"}"
+      "passport_id": "aeebc92d-13fb-4e23-8c3c-1aa82b167da6",
+      "name": "Acme Support Bot",
+      "endpoint": "https://agent1.example.com",
+      "capabilities": ["payments.refund", "data.export"],
+      "status": "active",
+      "last_seen": "2025-01-16T10:30:00Z"
     }
   ]
 }
 ```
 
-### Environment Variables
+## Error Handling
 
-#### CLI/Job Format
-```bash
-export AGENT_PASSPORT_ID=ap_1234567890abcdef
-```
+### Transport Errors
 
-#### Example Usage
-```bash
-# Set environment variable
-export AGENT_PASSPORT_ID=ap_1234567890abcdef
+| Error Code | Description | Action |
+|------------|-------------|--------|
+| `TRANSPORT_ERROR` | Connection failed | Retry with backoff |
+| `SIGNATURE_INVALID` | Invalid signature | Reject request |
+| `TIMESTAMP_EXPIRED` | Timestamp too old | Reject request |
+| `NONCE_REUSED` | Nonce already used | Reject request |
+| `PASSPORT_INVALID` | Invalid passport ID | Reject request |
 
-# Run CLI tool
-./agent-tool --process-data
+### Error Response Format
 
-# Run background job
-python worker.py
-```
-
-## Verification Process
-
-### Cache Behavior
-
-#### Cache Duration
-- **Default TTL**: 60 seconds
-- **Cache-Control**: `public, max-age=60`
-- **ETag**: `agent_passport_v1_<hash>`
-
-#### Verification Request
-```http
-GET /api/verify/ap_1234567890abcdef HTTP/1.1
-Host: passport-registry.com
-If-None-Match: "agent_passport_v1_abc123"
-```
-
-#### Cache Hit Response
-```http
-HTTP/1.1 304 Not Modified
-ETag: "agent_passport_v1_abc123"
-Cache-Control: public, max-age=60
-```
-
-#### Cache Miss Response
-```http
-HTTP/1.1 200 OK
-Content-Type: application/json
-ETag: "agent_passport_v1_abc123"
-Cache-Control: public, max-age=60
-
+```json
 {
-  "agent_id": "ap_1234567890abcdef",
-  "status": "active",
-  "permissions": ["read:data", "write:logs"],
-  "limits": {
-    "requests_per_hour": 10000
+  "error": {
+    "code": "SIGNATURE_INVALID",
+    "message": "Invalid agent signature",
+    "details": {
+      "passport_id": "aeebc92d-13fb-4e23-8c3c-1aa82b167da6",
+      "expected": "ed25519:abc123...",
+      "received": "ed25519:xyz789..."
+    }
   },
-  "regions": ["us-east-1", "eu-west-1"],
-  "verified_at": "2024-01-15T10:30:00Z"
-}
-```
-
-## Failure Modes
-
-### Invalid Agent ID
-```http
-HTTP/1.1 404 Not Found
-Content-Type: application/json
-
-{
-  "error": "agent_not_found",
-  "message": "Agent passport not found",
-  "agent_id": "ap_invalid_id"
-}
-```
-
-### Suspended Agent
-```http
-HTTP/1.1 403 Forbidden
-Content-Type: application/json
-
-{
-  "error": "agent_suspended",
-  "message": "This agent is suspended",
-  "agent_id": "ap_1234567890abcdef",
-  "status": "suspended",
-  "suspended_until": "2024-02-15T10:30:00Z"
-}
-```
-
-### Revoked Agent
-```http
-HTTP/1.1 403 Forbidden
-Content-Type: application/json
-
-{
-  "error": "agent_revoked",
-  "message": "This agent has been revoked",
-  "agent_id": "ap_1234567890abcdef",
-  "status": "revoked",
-  "revoked_at": "2024-01-10T10:30:00Z"
-}
-```
-
-### Rate Limit Exceeded
-```http
-HTTP/1.1 429 Too Many Requests
-Content-Type: application/json
-X-RateLimit-Limit: 60
-X-RateLimit-Remaining: 0
-X-RateLimit-Reset: 1640995200
-
-{
-  "error": "rate_limit_exceeded",
-  "message": "Too many verification requests",
-  "retry_after": 60
+  "timestamp": "2025-01-16T10:30:00Z"
 }
 ```
 
 ## Implementation Guidelines
 
-### Platform Requirements
+### Client Libraries
 
-1. **Header Validation**: Always check for `X-Agent-Passport-Id` header
-2. **Agent Verification**: Call `/api/verify` with proper caching
-3. **Status Enforcement**: Verify `status === "active"`
-4. **Permission Checking**: Validate required permissions
-5. **Rate Limiting**: Respect agent-specific limits
-6. **Regional Compliance**: Check allowed regions
+Transport profile implementations should provide:
 
-### Agent Requirements
+1. **Automatic Signing**: Sign all outgoing requests
+2. **Signature Verification**: Verify incoming requests
+3. **Nonce Management**: Generate and track nonces
+4. **Error Handling**: Handle transport errors gracefully
+5. **Retry Logic**: Implement exponential backoff
 
-1. **Header Inclusion**: Always include `X-Agent-Passport-Id` in requests
-2. **Environment Setup**: Set `AGENT_PASSPORT_ID` for CLI tools
-3. **WebSocket Handshake**: Send agent_id in first message
-4. **Error Handling**: Handle verification failures gracefully
-5. **Retry Logic**: Implement exponential backoff for retries
+### Server Implementation
 
-### Security Considerations
+Receiving systems should:
 
-1. **Header Injection**: Validate agent_id format to prevent injection
-2. **Cache Poisoning**: Use ETags to prevent cache poisoning
-3. **Rate Limiting**: Implement per-agent rate limiting
-4. **Audit Logging**: Log all verification attempts
-5. **Token Validation**: Verify agent_id matches authenticated user
+1. **Validate Signatures**: Verify all agent signatures
+2. **Check Timestamps**: Validate timestamp freshness
+3. **Track Nonces**: Prevent replay attacks
+4. **Rate Limiting**: Implement per-agent rate limiting
+5. **Logging**: Log all agent interactions
 
-## Examples
+## Testing
 
-### Express.js Middleware
-```javascript
-app.use((req, res, next) => {
-  const agentId = req.headers['x-agent-passport-id'];
-  if (agentId) {
-    // Verify agent and set req.agent
-    verifyAgent(agentId).then(agent => {
-      req.agent = agent;
-      next();
-    });
-  } else {
-    next();
-  }
-});
+### Test Vectors
+
+Standard test vectors for signature verification:
+
+```json
+{
+  "passport_id": "ap_test123",
+  "timestamp": 1640995200,
+  "nonce": "nonce_test123",
+  "payload": {"action": "test"},
+  "private_key": "test_private_key",
+  "expected_signature": "ed25519:test_signature"
+}
 ```
 
-### Python FastAPI Middleware
-```python
-@app.middleware("http")
-async def verify_agent_passport(request: Request, call_next):
-    agent_id = request.headers.get("x-agent-passport-id")
-    if agent_id:
-        agent = await verify_agent(agent_id)
-        request.state.agent = agent
-    return await call_next(request)
+### Conformance Testing
+
+Use the OAP conformance test suite to verify transport profile implementation:
+
+```bash
+npm run test:transport-profile
 ```
 
-### Node.js SDK Usage
-```javascript
-import { withAgentPassportId } from '@agent-passport/sdk';
+## Best Practices
 
-const response = await withAgentPassportId('ap_1234567890abcdef', fetch)(
-  'https://api.example.com/data'
-);
-```
+### Security
 
-### Python SDK Usage
-```python
-from agent_passport import agent_session
+1. **Key Management**: Store private keys securely
+2. **Key Rotation**: Implement regular key rotation
+3. **Audit Logging**: Log all agent communications
+4. **Monitoring**: Monitor for suspicious activity
 
-with agent_session('ap_1234567890abcdef') as session:
-    response = session.get('https://api.example.com/data')
-```
+### Performance
 
-## Version History
+1. **Connection Pooling**: Reuse connections when possible
+2. **Async Processing**: Process requests asynchronously
+3. **Caching**: Cache passport data appropriately
+4. **Load Balancing**: Distribute agent load
 
-- **v0.1** (2024-01-15): Initial specification
-  - HTTP/Webhooks header format
-  - gRPC metadata format
-  - WebSocket/SSE connection parameters
-  - Message queue attributes
-  - Environment variable format
-  - Cache behavior and verification process
-  - Failure modes and error handling
-  - Security considerations and examples
+### Reliability
+
+1. **Circuit Breakers**: Implement circuit breaker patterns
+2. **Health Checks**: Regular health check endpoints
+3. **Graceful Degradation**: Handle partial failures
+4. **Monitoring**: Comprehensive monitoring and alerting

@@ -1,0 +1,42 @@
+{
+  "passport_id": "550e8400-e29b-41d4-a716-446655440000",
+  "kind": "template",
+  "spec_version": "oap/1.0",
+  "owner_id": "org_12345678",
+  "owner_type": "org",
+  "assurance_level": "L2",
+  "status": "active",
+  "capabilities": [
+    {
+      "id": "payments.refund",
+      "params": {
+        "max_amount": 10000,
+        "currency": "USD"
+      }
+    }
+  ],
+  "limits": {
+    "payments.refund": {
+      "currency_limits": {
+        "USD": {
+          "max_per_tx": 5000,
+          "daily_cap": 50000
+        },
+        "EUR": {
+          "max_per_tx": 4500,
+          "daily_cap": 45000
+        }
+      },
+      "reason_codes": ["customer_request", "defective_product", "fraud"],
+      "idempotency_required": true
+    }
+  },
+  "regions": ["US", "CA", "EU"],
+  "metadata": {
+    "name": "Customer Support AI",
+    "description": "AI agent for customer support operations"
+  },
+  "created_at": "2024-01-01T00:00:00Z",
+  "updated_at": "2024-01-15T10:30:00Z",
+  "version": "1.0.0"
+}
