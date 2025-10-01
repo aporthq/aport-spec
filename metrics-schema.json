@@ -1,0 +1,504 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "OAP Metrics Schema",
+  "description": "Observability and monitoring data schema for Open Agent Passport API",
+  "type": "object",
+  "required": ["timestamp", "service", "metrics"],
+  "properties": {
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp when metrics were collected"
+    },
+    "service": {
+      "type": "string",
+      "description": "Service name generating the metrics",
+      "enum": ["aport-api", "aport-verify", "aport-policy", "aport-webhook"]
+    },
+    "version": {
+      "type": "string",
+      "description": "Service version",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "environment": {
+      "type": "string",
+      "enum": ["development", "staging", "production"],
+      "description": "Deployment environment"
+    },
+    "region": {
+      "type": "string",
+      "description": "Deployment region",
+      "enum": ["us", "eu", "ca", "ap", "global"]
+    },
+    "metrics": {
+      "type": "object",
+      "required": ["counters", "gauges", "histograms"],
+      "properties": {
+        "counters": {
+          "type": "object",
+          "description": "Monotonically increasing counters",
+          "properties": {
+            "requests_total": {
+              "type": "object",
+              "description": "Total number of requests",
+              "properties": {
+                "value": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "labels": {
+                  "type": "object",
+                  "properties": {
+                    "method": {
+                      "type": "string",
+                      "enum": [
+                        "GET",
+                        "POST",
+                        "PUT",
+                        "DELETE",
+                        "PATCH",
+                        "OPTIONS"
+                      ]
+                    },
+                    "endpoint": {
+                      "type": "string"
+                    },
+                    "status_code": {
+                      "type": "integer",
+                      "minimum": 100,
+                      "maximum": 599
+                    },
+                    "region": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            },
+            "passports_created": {
+              "type": "object",
+              "description": "Total number of passports created",
+              "properties": {
+                "value": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "labels": {
+                  "type": "object",
+                  "properties": {
+                    "owner_type": {
+                      "type": "string",
+                      "enum": ["org", "user"]
+                    },
+                    "assurance_level": {
+                      "type": "string",
+                      "enum": ["L0", "L1", "L2", "L3", "L4KYC", "L4FIN"]
+                    }
+                  }
+                }
+              }
+            },
+            "decisions_created": {
+              "type": "object",
+              "description": "Total number of policy decisions created",
+              "properties": {
+                "value": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "labels": {
+                  "type": "object",
+                  "properties": {
+                    "policy_id": {
+                      "type": "string"
+                    },
+                    "decision": {
+                      "type": "string",
+                      "enum": ["allow", "deny"]
+                    },
+                    "reason": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            },
+            "errors_total": {
+              "type": "object",
+              "description": "Total number of errors",
+              "properties": {
+                "value": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "labels": {
+                  "type": "object",
+                  "properties": {
+                    "error_code": {
+                      "type": "string"
+                    },
+                    "endpoint": {
+                      "type": "string"
+                    },
+                    "severity": {
+                      "type": "string",
+                      "enum": ["low", "medium", "high", "critical"]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "gauges": {
+          "type": "object",
+          "description": "Current values that can go up or down",
+          "properties": {
+            "active_passports": {
+              "type": "object",
+              "description": "Number of currently active passports",
+              "properties": {
+                "value": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "labels": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": ["active", "suspended", "revoked"]
+                    },
+                    "region": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            },
+            "active_connections": {
+              "type": "object",
+              "description": "Number of active connections",
+              "properties": {
+                "value": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "labels": {
+                  "type": "object",
+                  "properties": {
+                    "connection_type": {
+                      "type": "string",
+                      "enum": ["http", "websocket", "grpc"]
+                    }
+                  }
+                }
+              }
+            },
+            "memory_usage_bytes": {
+              "type": "object",
+              "description": "Current memory usage in bytes",
+              "properties": {
+                "value": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "cpu_usage_percent": {
+              "type": "object",
+              "description": "Current CPU usage percentage",
+              "properties": {
+                "value": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 100
+                }
+              }
+            }
+          }
+        },
+        "histograms": {
+          "type": "object",
+          "description": "Distribution of values over time",
+          "properties": {
+            "request_duration_seconds": {
+              "type": "object",
+              "description": "Request duration distribution",
+              "properties": {
+                "count": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sum": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "buckets": {
+                  "type": "object",
+                  "description": "Histogram buckets",
+                  "properties": {
+                    "0.005": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "0.01": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "0.025": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "0.05": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "0.1": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "0.25": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "0.5": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "1": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "2.5": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "5": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "10": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "+Inf": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
+                },
+                "labels": {
+                  "type": "object",
+                  "properties": {
+                    "method": {
+                      "type": "string"
+                    },
+                    "endpoint": {
+                      "type": "string"
+                    },
+                    "status_code": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            },
+            "policy_evaluation_duration_seconds": {
+              "type": "object",
+              "description": "Policy evaluation duration distribution",
+              "properties": {
+                "count": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sum": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "buckets": {
+                  "type": "object",
+                  "description": "Histogram buckets for policy evaluation"
+                },
+                "labels": {
+                  "type": "object",
+                  "properties": {
+                    "policy_id": {
+                      "type": "string"
+                    },
+                    "decision": {
+                      "type": "string",
+                      "enum": ["allow", "deny"]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "traces": {
+      "type": "array",
+      "description": "Distributed tracing data",
+      "items": {
+        "type": "object",
+        "properties": {
+          "trace_id": {
+            "type": "string",
+            "description": "Unique trace identifier"
+          },
+          "span_id": {
+            "type": "string",
+            "description": "Unique span identifier"
+          },
+          "parent_span_id": {
+            "type": "string",
+            "description": "Parent span identifier"
+          },
+          "operation_name": {
+            "type": "string",
+            "description": "Operation name"
+          },
+          "start_time": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Span start time"
+          },
+          "duration": {
+            "type": "number",
+            "description": "Span duration in seconds"
+          },
+          "tags": {
+            "type": "object",
+            "description": "Span tags",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "logs": {
+            "type": "array",
+            "description": "Span logs",
+            "items": {
+              "type": "object",
+              "properties": {
+                "timestamp": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "fields": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "events": {
+      "type": "array",
+      "description": "Application events",
+      "items": {
+        "type": "object",
+        "properties": {
+          "event_type": {
+            "type": "string",
+            "enum": [
+              "passport_created",
+              "passport_updated",
+              "passport_suspended",
+              "passport_revoked",
+              "decision_created",
+              "decision_updated",
+              "policy_evaluated",
+              "error_occurred",
+              "rate_limit_exceeded"
+            ]
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "data": {
+            "type": "object",
+            "description": "Event-specific data",
+            "additionalProperties": true
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["debug", "info", "warn", "error", "fatal"]
+          }
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "timestamp": "2025-01-16T10:30:00Z",
+      "service": "aport-api",
+      "version": "1.0.0",
+      "environment": "production",
+      "region": "us",
+      "metrics": {
+        "counters": {
+          "requests_total": {
+            "value": 1000000,
+            "labels": {
+              "method": "GET",
+              "endpoint": "/api/verify/{agent_id}",
+              "status_code": 200,
+              "region": "us"
+            }
+          },
+          "passports_created": {
+            "value": 5000,
+            "labels": {
+              "owner_type": "org",
+              "assurance_level": "L4KYC"
+            }
+          }
+        },
+        "gauges": {
+          "active_passports": {
+            "value": 2500,
+            "labels": {
+              "status": "active",
+              "region": "us"
+            }
+          },
+          "memory_usage_bytes": {
+            "value": 1073741824
+          }
+        },
+        "histograms": {
+          "request_duration_seconds": {
+            "count": 1000000,
+            "sum": 50000,
+            "buckets": {
+              "0.005": 100000,
+              "0.01": 200000,
+              "0.025": 300000,
+              "0.05": 400000,
+              "0.1": 500000,
+              "0.25": 600000,
+              "0.5": 700000,
+              "1": 800000,
+              "2.5": 900000,
+              "5": 950000,
+              "10": 990000,
+              "+Inf": 1000000
+            },
+            "labels": {
+              "method": "GET",
+              "endpoint": "/api/verify/{agent_id}",
+              "status_code": 200
+            }
+          }
+        }
+      }
+    }
+  ]
+}

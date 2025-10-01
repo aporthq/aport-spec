@@ -1,0 +1,114 @@
+{
+  "$id": "https://github.com/aporthq/aport-spec/oap/decision-schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Open Agent Passport Decision",
+  "description": "Schema for Open Agent Passport (OAP) v1.0 decision objects",
+  "type": "object",
+  "required": [
+    "decision_id",
+    "passport_id",
+    "policy_id",
+    "owner_id",
+    "assurance_level",
+    "allow",
+    "reasons",
+    "issued_at",
+    "expires_at",
+    "passport_digest",
+    "signature",
+    "kid"
+  ],
+  "properties": {
+    "decision_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier for the decision (UUID v4)",
+      "example": "550e8400-e29b-41d4-a716-446655440000"
+    },
+    "policy_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(\\.[a-z0-9]+)*\\.v[0-9]+$",
+      "description": "Policy pack identifier",
+      "example": "payments.refund.v1"
+    },
+    "agent_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Agent ID that was evaluated",
+      "example": "550e8400-e29b-41d4-a716-446655440001"
+    },
+    "owner_id": {
+      "type": "string",
+      "description": "Owner ID from the passport",
+      "example": "org_12345678"
+    },
+    "assurance_level": {
+      "type": "string",
+      "enum": ["L0", "L1", "L2", "L3", "L4KYC", "L4FIN"],
+      "description": "Assurance level from the passport",
+      "example": "L2"
+    },
+    "allow": {
+      "type": "boolean",
+      "description": "Whether the action is allowed",
+      "example": true
+    },
+    "reasons": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["code"],
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Error or success code",
+            "example": "oap.limit_exceeded"
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable message",
+            "example": "Transaction amount exceeds daily limit"
+          }
+        }
+      },
+      "description": "Array of reasons for the decision",
+      "minItems": 1
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the decision was created",
+      "example": "2024-01-15T10:30:00Z"
+    },
+    "expires_in": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of seconds until the decision expires",
+      "example": 3600
+    },
+    "passport_digest": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$",
+      "description": "SHA-256 hash of JCS-canonicalized passport view",
+      "example": "sha256:abcd1234efgh5678ijkl9012mnop3456qrst7890uvwx1234yzab5678cdef"
+    },
+    "signature": {
+      "type": "string",
+      "pattern": "^ed25519:[A-Za-z0-9+/=]+$",
+      "description": "Ed25519 signature over JCS-canonicalized decision payload",
+      "example": "ed25519:abcd1234efgh5678ijkl9012mnop3456qrst7890uvwx1234yzab5678cdef=="
+    },
+    "kid": {
+      "type": "string",
+      "pattern": "^oap:(registry|owner):[a-zA-Z0-9._-]+$",
+      "description": "Key identifier for signature verification",
+      "example": "oap:registry:key-2025-01"
+    },
+    "decision_token": {
+      "type": "string",
+      "description": "Optional compact JWT for sub-TTL caching",
+      "example": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9..."
+    }
+  },
+  "additionalProperties": false
+}

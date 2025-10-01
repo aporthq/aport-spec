@@ -1,0 +1,20 @@
+{
+  "decision_id": "550e8400-e29b-41d4-a716-446655440002",
+  "policy_id": "payments.refund.v1",
+  "agent_id": "550e8400-e29b-41d4-a716-446655440001",
+  "owner_id": "org_87654321",
+  "assurance_level": "L3",
+  "allow": true,
+  "reasons": [
+    {
+      "code": "oap.allowed",
+      "message": "Transaction within limits and policy requirements"
+    }
+  ],
+  "created_at": "2024-01-15T10:30:00Z",
+  "expires_in": 3600,
+  "passport_digest": "sha256:abcd1234efgh5678ijkl9012mnop3456qrst7890uvwx1234yzab5678cdef",
+  "signature": "ed25519:abcd1234efgh5678ijkl9012mnop3456qrst7890uvwx1234yzab5678cdef==",
+  "kid": "oap:registry:key-2025-01",
+  "decision_token": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJkZWNpc2lvbl9pZCI6IjU1MGU4NDAwLWUyOWItNDFkNC1hNzE2LTQ0NjY1NTQ0MDAwMiIsInBvbGljeV9pZCI6InBheW1lbnRzLnJlZnVuZC52MSIsInBhc3Nwb3J0X2lkIjoiNTUwZTg0MDAtZTI5Yi00MWQ0LWE3MTYtNDQ2NjU1NDQwMDAxIiwib3duZXJfaWQiOiJvcmdfODc2NTQzMjEiLCJhbGxvd190cnVlIiwiaXNzdWVkX2F0IjoiMjAyNC0wMS0xNVQxMDozMDowMFoiLCJleHBpcmVzX2F0IjoiMjAyNC0wMS0xNVQxMTozMDowMFoifQ.signature"
+}

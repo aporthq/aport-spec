@@ -2,188 +2,313 @@
 
 ## Overview
 
-The AI Agent Passport Registry can send webhook notifications when agent passport status changes occur.
-
-## Configuration
-
-Webhooks are configured via environment variables:
-- `WEBHOOK_URL`: Target webhook endpoint URL
-- `WEBHOOK_SECRET`: Secret key for webhook signature verification
+The Open Agent Passport (OAP) webhook system provides real-time notifications for agent passport events. This specification defines the webhook payload format, delivery mechanisms, and security requirements.
 
 ## Webhook Events
 
-### Status Change Events
-- `passport.created` - New passport created
-- `passport.updated` - Passport data updated
-- `passport.suspended` - Passport suspended
-- `passport.revoked` - Passport revoked
-- `passport.activated` - Suspended passport reactivated
+### Supported Events
 
-## Payload Format
+| Event | Description | Trigger |
+|-------|-------------|---------|
+| `passport.created` | Agent passport created | New passport registration |
+| `passport.updated` | Agent passport updated | Passport data changes |
+| `passport.suspended` | Agent passport suspended | Status change to suspended |
+| `passport.revoked` | Agent passport revoked | Status change to revoked |
+| `passport.activated` | Agent passport activated | Status change to active |
+| `decision.created` | Policy decision created | New authorization decision |
+| `decision.updated` | Policy decision updated | Decision modification |
 
-### Headers
-```
-Content-Type: application/json
-X-Webhook-Signature: sha256=abc123...
-X-Webhook-Event: passport.updated
-X-Webhook-Timestamp: 1640995200
-```
+### Event Payload Structure
 
-### Payload Structure
+All webhook events follow this base structure:
+
 ```json
 {
-  "event": "passport.updated",
-  "timestamp": "2024-01-15T10:30:00Z",
+  "id": "evt_1234567890",
+  "type": "passport.created",
+  "created_at": "2025-01-16T10:30:00Z",
   "data": {
-    "agent_id": "ap_128094d3",
-    "previous_status": "active",
-    "current_status": "suspended",
-    "reason": "Policy violation",
-    "updated_by": "admin@example.com"
+    // Event-specific data
   },
-  "passport": {
-    "agent_id": "ap_128094d3",
-    "owner": "AI Research Lab",
-    "role": "Tier-1",
-    "status": "suspended",
-    "updated_at": "2024-01-15T10:30:00Z"
-  }
+  "api_version": "2025-01-16",
+  "livemode": true
 }
 ```
 
-## Signature Verification
+## Event Payloads
 
-Webhooks include a signature header for verification:
+### Passport Events
 
-```
-X-Webhook-Signature: sha256=abc123...
-```
+#### passport.created
 
-The signature is generated using HMAC-SHA256:
-```
-signature = hmac-sha256(webhook_secret, payload_body)
-```
-
-## Retry Logic
-
-- **Initial Retry**: 1 second delay
-- **Subsequent Retries**: Exponential backoff (2s, 4s, 8s, 16s, 32s)
-- **Max Retries**: 5 attempts
-- **Timeout**: 30 seconds per attempt
-- **Success Criteria**: HTTP 2xx response
-
-## Security
-
-- **HTTPS Required**: All webhook URLs must use HTTPS
-- **Signature Verification**: Always verify webhook signatures
-- **Timestamp Validation**: Reject webhooks older than 5 minutes
-- **IP Allowlisting**: Optional IP allowlisting for additional security
-
-## Error Handling
-
-### Webhook Endpoint Errors
-- **4xx Errors**: Will not be retried
-- **5xx Errors**: Will be retried according to retry logic
-- **Timeout**: Will be retried
-- **Network Errors**: Will be retried
-
-### Failed Webhooks
-After max retries, failed webhooks are logged but not retried. Check logs for failed webhook deliveries.
-
-## Testing
-
-### Webhook Testing Endpoint
-```
-POST /api/admin/webhook-test
+```json
+{
+  "id": "evt_1234567890",
+  "type": "passport.created",
+  "created_at": "2025-01-16T10:30:00Z",
+  "data": {
+    "object": "passport",
+    "agent_id": "aeebc92d-13fb-4e23-8c3c-1aa82b167da6",
+    "owner_id": "ap_org_456",
+    "name": "Acme Support Bot",
+    "status": "active",
+    "capabilities": [
+      {
+        "id": "payments.refund",
+        "params": {"max_amount": 5000}
+      }
+    ],
+    "assurance_level": "L4KYC",
+    "created_at": "2025-01-16T10:30:00Z"
+  },
+  "api_version": "2025-01-16",
+  "livemode": true
+}
 ```
 
-Test webhook delivery without changing actual passport status.
+#### passport.updated
 
-### Example Test Request
-```bash
-curl -X POST "https://api.aport.io/api/admin/webhook-test" \
-  -H "Authorization: Bearer your-admin-token" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "webhook_url": "https://your-endpoint.com/webhook",
-    "event": "passport.updated"
-  }'
+```json
+{
+  "id": "evt_1234567891",
+  "type": "passport.updated",
+  "created_at": "2025-01-16T10:35:00Z",
+  "data": {
+    "object": "passport",
+    "agent_id": "aeebc92d-13fb-4e23-8c3c-1aa82b167da6",
+    "changes": [
+      {
+        "field": "capabilities",
+        "old_value": [{"id": "payments.refund", "params": {"max_amount": 5000}}],
+        "new_value": [{"id": "payments.refund", "params": {"max_amount": 10000}}]
+      }
+    ],
+    "updated_at": "2025-01-16T10:35:00Z"
+  },
+  "api_version": "2025-01-16",
+  "livemode": true
+}
 ```
 
-## Implementation Examples
+#### passport.suspended
 
-### Node.js Express Handler
+```json
+{
+  "id": "evt_1234567892",
+  "type": "passport.suspended",
+  "created_at": "2025-01-16T10:40:00Z",
+  "data": {
+    "object": "passport",
+    "agent_id": "aeebc92d-13fb-4e23-8c3c-1aa82b167da6",
+    "reason": "Policy violation detected",
+    "suspended_at": "2025-01-16T10:40:00Z",
+    "suspended_by": "ap_user_789"
+  },
+  "api_version": "2025-01-16",
+  "livemode": true
+}
+```
+
+### Decision Events
+
+#### decision.created
+
+```json
+{
+  "id": "evt_1234567893",
+  "type": "decision.created",
+  "created_at": "2025-01-16T10:45:00Z",
+  "data": {
+    "object": "decision",
+    "decision_id": "dec_123456789",
+    "agent_id": "aeebc92d-13fb-4e23-8c3c-1aa82b167da6",
+    "policy_id": "payments.refund.v1",
+    "allow": true,
+    "reasons": [
+      {
+        "code": "capability_verified",
+        "message": "Agent has required refund capability",
+        "severity": "info"
+      }
+    ],
+    "expires_in": 300,
+    "context": {
+      "amount": 5000,
+      "currency": "USD",
+      "transaction_id": "txn_123456"
+    }
+  },
+  "api_version": "2025-01-16",
+  "livemode": true
+}
+```
+
+## Webhook Security
+
+### Signature Verification
+
+All webhooks include a signature header for verification:
+
+```
+X-APort-Signature: t=1640995200,v1=abc123def456...
+```
+
+### Signature Format
+
+```
+X-APort-Signature: t={timestamp},v1={signature}
+```
+
+- **t**: Unix timestamp of the webhook
+- **v1**: HMAC-SHA256 signature of the payload
+
+### Signature Generation
+
 ```javascript
 const crypto = require('crypto');
 
-app.post('/webhook', (req, res) => {
-  const signature = req.headers['x-webhook-signature'];
-  const payload = JSON.stringify(req.body);
-  
-  // Verify signature
-  const expectedSignature = crypto
-    .createHmac('sha256', process.env.WEBHOOK_SECRET)
-    .update(payload)
+function generateSignature(payload, secret, timestamp) {
+  const payloadString = JSON.stringify(payload);
+  const signedPayload = `${timestamp}.${payloadString}`;
+  const signature = crypto
+    .createHmac('sha256', secret)
+    .update(signedPayload)
     .digest('hex');
-  
-  if (signature !== `sha256=${expectedSignature}`) {
-    return res.status(401).send('Invalid signature');
-  }
-  
-  // Process webhook
-  const { event, data, passport } = req.body;
-  console.log(`Received ${event} for agent ${passport.agent_id}`);
-  
-  res.status(200).send('OK');
-});
+  return `t=${timestamp},v1=${signature}`;
+}
 ```
 
-### Python Flask Handler
-```python
-import hmac
-import hashlib
-import json
-from flask import Flask, request, jsonify
+### Signature Verification
 
-app = Flask(__name__)
-
-@app.route('/webhook', methods=['POST'])
-def webhook():
-    signature = request.headers.get('X-Webhook-Signature')
-    payload = request.get_data()
-    
-    # Verify signature
-    expected_signature = hmac.new(
-        WEBHOOK_SECRET.encode(),
-        payload,
-        hashlib.sha256
-    ).hexdigest()
-    
-    if signature != f'sha256={expected_signature}':
-        return 'Invalid signature', 401
-    
-    # Process webhook
-    data = request.get_json()
-    event = data['event']
-    passport = data['passport']
-    
-    print(f'Received {event} for agent {passport["agent_id"]}')
-    
-    return 'OK', 200
+```javascript
+function verifySignature(payload, signature, secret) {
+  const [timestamp, signatureValue] = signature.split(',');
+  const t = timestamp.split('=')[1];
+  const v1 = signatureValue.split('=')[1];
+  
+  const expectedSignature = generateSignature(payload, secret, t);
+  return expectedSignature === signature;
+}
 ```
 
-## Monitoring
+## Webhook Delivery
 
-Webhook delivery metrics are available via the `/api/metrics` endpoint:
+### Delivery Attempts
+
+- **Initial Attempt**: Immediate delivery
+- **Retry Attempts**: 3 retries with exponential backoff
+- **Retry Intervals**: 1s, 5s, 30s, 5m, 30m, 2h, 6h, 12h
+- **Timeout**: 30 seconds per attempt
+
+### Delivery Status
+
+| Status | Description |
+|--------|-------------|
+| `pending` | Webhook queued for delivery |
+| `delivered` | Successfully delivered |
+| `failed` | All retry attempts failed |
+| `retrying` | Currently retrying delivery |
+
+### Response Requirements
+
+Webhook endpoints must:
+
+1. **Return 200 OK** for successful processing
+2. **Process within 30 seconds** to avoid timeout
+3. **Handle duplicate events** idempotently
+4. **Log delivery attempts** for debugging
+
+## Webhook Configuration
+
+### Endpoint Registration
 
 ```json
 {
-  "webhooks": {
-    "totalSent": 1250,
-    "successfulDeliveries": 1200,
-    "failedDeliveries": 50,
-    "successRate": 96.0,
-    "averageDeliveryTime": 1.2
-  }
+  "url": "https://example.com/webhooks/aport",
+  "events": ["passport.created", "passport.updated"],
+  "secret": "whsec_1234567890",
+  "active": true,
+  "created_at": "2025-01-16T10:00:00Z"
 }
 ```
+
+### Event Filtering
+
+Webhooks can be configured to receive specific events:
+
+```json
+{
+  "events": [
+    "passport.created",
+    "passport.suspended",
+    "passport.revoked",
+    "decision.created"
+  ]
+}
+```
+
+## Error Handling
+
+### Webhook Failures
+
+When webhook delivery fails:
+
+1. **Log Error**: Record failure reason and timestamp
+2. **Retry Logic**: Attempt delivery with exponential backoff
+3. **Dead Letter Queue**: Store failed webhooks for manual review
+4. **Alerting**: Notify administrators of persistent failures
+
+### Common Error Scenarios
+
+| Error | Cause | Resolution |
+|-------|-------|------------|
+| `timeout` | Endpoint too slow | Optimize endpoint performance |
+| `connection_refused` | Endpoint unavailable | Check endpoint availability |
+| `invalid_response` | Non-200 status | Fix endpoint response handling |
+| `signature_mismatch` | Invalid signature | Verify signature calculation |
+
+## Testing
+
+### Webhook Testing
+
+Use the webhook testing endpoint:
+
+```bash
+curl -X POST https://api.aport.io/webhooks/test \
+  -H "Authorization: Bearer sk_test_..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://example.com/webhooks/test",
+    "events": ["passport.created"]
+  }'
+```
+
+### Test Events
+
+Test events are prefixed with `test.`:
+
+- `test.passport.created`
+- `test.decision.created`
+
+## Best Practices
+
+### Endpoint Implementation
+
+1. **Idempotency**: Handle duplicate events gracefully
+2. **Async Processing**: Process webhooks asynchronously
+3. **Error Handling**: Implement proper error handling
+4. **Logging**: Log all webhook processing attempts
+
+### Security
+
+1. **HTTPS Only**: Always use HTTPS endpoints
+2. **Signature Verification**: Always verify webhook signatures
+3. **Secret Management**: Store webhook secrets securely
+4. **Rate Limiting**: Implement rate limiting on webhook endpoints
+
+### Monitoring
+
+1. **Delivery Metrics**: Track webhook delivery success rates
+2. **Performance Monitoring**: Monitor endpoint response times
+3. **Error Tracking**: Track and alert on webhook failures
+4. **Audit Logging**: Log all webhook processing activities

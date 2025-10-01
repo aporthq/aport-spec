@@ -1,0 +1,238 @@
+{
+  "$id": "https://github.com/aporthq/aport-spec/oap/passport-schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Open Agent Passport",
+  "description": "Schema for Open Agent Passport (OAP) v1.0 passport objects",
+  "type": "object",
+  "required": [
+    "passport_id",
+    "kind",
+    "spec_version",
+    "owner_id",
+    "owner_type",
+    "status",
+    "assurance_level",
+    "capabilities",
+    "limits",
+    "regions",
+    "created_at",
+    "updated_at",
+    "version"
+  ],
+  "properties": {
+    "passport_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier for the passport (UUID v4)",
+      "example": "550e8400-e29b-41d4-a716-446655440000"
+    },
+    "kind": {
+      "type": "string",
+      "enum": ["template", "instance"],
+      "description": "Type of passport - template (canonical identity) or instance (tenant-specific)",
+      "example": "template"
+    },
+    "spec_version": {
+      "type": "string",
+      "const": "oap/1.0",
+      "description": "OAP specification version",
+      "example": "oap/1.0"
+    },
+    "template_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Template passport ID (required for instances)",
+      "example": "550e8400-e29b-41d4-a716-446655440001"
+    },
+    "owner_id": {
+      "type": "string",
+      "description": "Unique identifier for the owner (organization or user)",
+      "example": "org_12345678"
+    },
+    "owner_type": {
+      "type": "string",
+      "enum": ["org", "user"],
+      "description": "Type of owner (organization or user)",
+      "example": "org"
+    },
+    "assurance_level": {
+      "type": "string",
+      "enum": ["L0", "L1", "L2", "L3", "L4KYC", "L4FIN"],
+      "description": "Assurance level of the passport owner",
+      "example": "L2"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "active", "suspended", "revoked"],
+      "description": "Current status of the passport",
+      "example": "active"
+    },
+    "capabilities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(\\.[a-z0-9]+)*$",
+            "description": "Capability identifier",
+            "example": "payments.refund"
+          },
+          "params": {
+            "type": "object",
+            "description": "Optional parameters for the capability",
+            "additionalProperties": true,
+            "example": {
+              "max_amount": 5000,
+              "currency": "USD"
+            }
+          }
+        }
+      },
+      "description": "List of capabilities granted to the agent",
+      "example": [
+        {
+          "id": "payments.refund",
+          "params": {
+            "max_amount": 5000,
+            "currency": "USD"
+          }
+        },
+        {
+          "id": "data.export"
+        }
+      ]
+    },
+    "limits": {
+      "type": "object",
+      "description": "Operational limits for the agent",
+      "properties": {
+        "payments.refund": {
+          "type": "object",
+          "properties": {
+            "currency_limits": {
+              "type": "object",
+              "patternProperties": {
+                "^[A-Z]{3}$": {
+                  "type": "object",
+                  "properties": {
+                    "max_per_tx": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "description": "Maximum amount per transaction in minor units"
+                    },
+                    "daily_cap": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "description": "Maximum daily total in minor units"
+                    }
+                  }
+                }
+              }
+            },
+            "reason_codes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Allowed reason codes for refunds"
+            },
+            "idempotency_required": {
+              "type": "boolean",
+              "description": "Whether idempotency keys are required"
+            }
+          }
+        },
+        "data.export": {
+          "type": "object",
+          "properties": {
+            "max_rows": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Maximum number of rows per export"
+            },
+            "allow_pii": {
+              "type": "boolean",
+              "description": "Whether PII can be included in exports"
+            },
+            "allowed_collections": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Allowed data collections for export"
+            }
+          }
+        },
+        "repo.release.publish": {
+          "type": "object",
+          "properties": {
+            "allowed_branches": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Allowed branches for releases"
+            },
+            "max_releases_per_day": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Maximum releases per day"
+            },
+            "require_signed_artifacts": {
+              "type": "boolean",
+              "description": "Whether artifacts must be signed"
+            }
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "regions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Z]{2}(-[A-Z]{2})?$"
+      },
+      "description": "Geographic regions where the agent is authorized to operate",
+      "example": ["US", "EU", "CA"]
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional metadata for the passport",
+      "additionalProperties": true
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp of creation",
+      "example": "2024-01-01T00:00:00Z"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp of last update",
+      "example": "2024-01-15T10:30:00Z"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Version of the passport schema",
+      "example": "1.0.0"
+    },
+    "spec_version": {
+      "type": "string",
+      "const": "oap/1.0",
+      "description": "OAP specification version",
+      "example": "oap/1.0"
+    },
+    "parent_agent_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Parent template passport ID (required for instances)",
+      "example": "550e8400-e29b-41d4-a716-446655440001"
+    }
+  },
+  "additionalProperties": false
+}

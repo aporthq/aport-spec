@@ -1,0 +1,129 @@
+{
+  "@context": {
+    "oap": "https://github.com/aporthq/aport-spec/oap/v1#",
+    "vc": "https://www.w3.org/2018/credentials/v1",
+    "passport": {
+      "@id": "oap:passport",
+      "@type": "@id"
+    },
+    "decision": {
+      "@id": "oap:decision",
+      "@type": "@id"
+    },
+    "passport_id": {
+      "@id": "oap:passportId",
+      "@type": "xsd:string"
+    },
+    "kind": {
+      "@id": "oap:kind",
+      "@type": "xsd:string"
+    },
+    "spec_version": {
+      "@id": "oap:specVersion",
+      "@type": "xsd:string"
+    },
+    "parent_agent_id": {
+      "@id": "oap:parentAgentId",
+      "@type": "xsd:string"
+    },
+    "owner_id": {
+      "@id": "oap:ownerId",
+      "@type": "xsd:string"
+    },
+    "owner_type": {
+      "@id": "oap:ownerType",
+      "@type": "xsd:string"
+    },
+    "assurance_level": {
+      "@id": "oap:assuranceLevel",
+      "@type": "xsd:string"
+    },
+    "status": {
+      "@id": "oap:status",
+      "@type": "xsd:string"
+    },
+    "capabilities": {
+      "@id": "oap:capabilities",
+      "@type": "xsd:string",
+      "@container": "@list"
+    },
+    "limits": {
+      "@id": "oap:limits",
+      "@type": "oap:Limits"
+    },
+    "regions": {
+      "@id": "oap:regions",
+      "@type": "xsd:string",
+      "@container": "@list"
+    },
+    "metadata": {
+      "@id": "oap:metadata",
+      "@type": "oap:Metadata"
+    },
+    "created_at": {
+      "@id": "oap:createdAt",
+      "@type": "xsd:dateTime"
+    },
+    "updated_at": {
+      "@id": "oap:updatedAt",
+      "@type": "xsd:dateTime"
+    },
+    "version": {
+      "@id": "oap:version",
+      "@type": "xsd:string"
+    },
+    "decision_id": {
+      "@id": "oap:decisionId",
+      "@type": "xsd:string"
+    },
+    "policy_id": {
+      "@id": "oap:policyId",
+      "@type": "xsd:string"
+    },
+    "allow": {
+      "@id": "oap:allow",
+      "@type": "xsd:boolean"
+    },
+    "reasons": {
+      "@id": "oap:reasons",
+      "@type": "oap:Reason",
+      "@container": "@list"
+    },
+    "expires_in": {
+      "@id": "oap:expiresIn",
+      "@type": "xsd:integer"
+    },
+    "passport_digest": {
+      "@id": "oap:passportDigest",
+      "@type": "xsd:string"
+    },
+    "signature": {
+      "@id": "oap:signature",
+      "@type": "xsd:string"
+    },
+    "kid": {
+      "@id": "oap:kid",
+      "@type": "xsd:string"
+    },
+    "decision_token": {
+      "@id": "oap:decisionToken",
+      "@type": "xsd:string"
+    },
+    "agent_id": {
+      "@id": "oap:agentId",
+      "@type": "xsd:string"
+    },
+    "remaining_daily_cap": {
+      "@id": "oap:remainingDailyCap",
+      "@type": "oap:DailyCap"
+    },
+    "code": {
+      "@id": "oap:code",
+      "@type": "xsd:string"
+    },
+    "message": {
+      "@id": "oap:message",
+      "@type": "xsd:string"
+    }
+  }
+}

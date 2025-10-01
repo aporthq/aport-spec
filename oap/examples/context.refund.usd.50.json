@@ -1,0 +1,9 @@
+{
+  "amount": 5000,
+  "currency": "USD",
+  "order_id": "order_123456789",
+  "customer_id": "cust_987654321",
+  "reason_code": "customer_request",
+  "region": "US",
+  "idempotency_key": "refund_20240115_001"
+}

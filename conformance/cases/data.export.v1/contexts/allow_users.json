@@ -1,0 +1,6 @@
+{
+  "collection": "users",
+  "estimated_rows": 50000,
+  "include_pii": false,
+  "region": "US"
+}
