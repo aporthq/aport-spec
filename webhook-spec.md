@@ -48,7 +48,7 @@ All webhook events follow this base structure:
   "created_at": "2025-01-16T10:30:00Z",
   "data": {
     "object": "passport",
-    "agent_id": "aeebc92d-13fb-4e23-8c3c-1aa82b167da6",
+    "agent_id": "ap_128094d3",
     "owner_id": "ap_org_456",
     "name": "Acme Support Bot",
     "status": "active",
@@ -75,7 +75,7 @@ All webhook events follow this base structure:
   "created_at": "2025-01-16T10:35:00Z",
   "data": {
     "object": "passport",
-    "agent_id": "aeebc92d-13fb-4e23-8c3c-1aa82b167da6",
+    "agent_id": "ap_128094d3",
     "changes": [
       {
         "field": "capabilities",
@@ -99,7 +99,7 @@ All webhook events follow this base structure:
   "created_at": "2025-01-16T10:40:00Z",
   "data": {
     "object": "passport",
-    "agent_id": "aeebc92d-13fb-4e23-8c3c-1aa82b167da6",
+    "agent_id": "ap_128094d3",
     "reason": "Policy violation detected",
     "suspended_at": "2025-01-16T10:40:00Z",
     "suspended_by": "ap_user_789"
@@ -121,7 +121,7 @@ All webhook events follow this base structure:
   "data": {
     "object": "decision",
     "decision_id": "dec_123456789",
-    "agent_id": "aeebc92d-13fb-4e23-8c3c-1aa82b167da6",
+    "agent_id": "ap_128094d3",
     "policy_id": "payments.refund.v1",
     "allow": true,
     "reasons": [

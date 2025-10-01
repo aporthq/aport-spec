@@ -146,7 +146,7 @@
       },
       "timestamp": "2025-01-16T10:30:00Z",
       "request_id": "req_123456790",
-      "path": "/api/verify/aeebc92d-13fb-4e23-8c3c-1aa82b167da6",
+      "path": "/api/verify/ap_128094d3",
       "method": "GET",
       "status_code": 429,
       "retry_after": 3600,
@@ -160,15 +160,15 @@
     {
       "error": {
         "code": "passport_not_found",
-        "message": "Passport with ID aeebc92d-13fb-4e23-8c3c-1aa82b167da6 not found",
+        "message": "Passport with ID ap_128094d3 not found",
         "details": {
-          "passport_id": "aeebc92d-13fb-4e23-8c3c-1aa82b167da6",
+          "passport_id": "ap_128094d3",
           "suggestion": "Verify the passport ID is correct and the passport exists"
         }
       },
       "timestamp": "2025-01-16T10:30:00Z",
       "request_id": "req_123456791",
-      "path": "/api/verify/aeebc92d-13fb-4e23-8c3c-1aa82b167da6",
+      "path": "/api/verify/ap_128094d3",
       "method": "GET",
       "status_code": 404
     },
