@@ -77,7 +77,7 @@
             "type": "string",
             "pattern": "^[a-z0-9]+(\\.[a-z0-9]+)*$",
             "description": "Capability identifier",
-            "example": "payments.refund"
+            "example": "finance.payment.refund"
           },
           "params": {
             "type": "object",
@@ -93,7 +93,7 @@
       "description": "List of capabilities granted to the agent",
       "example": [
         {
-          "id": "payments.refund",
+          "id": "finance.payment.refund",
           "params": {
             "max_amount": 5000,
             "currency": "USD"
@@ -108,7 +108,7 @@
       "type": "object",
       "description": "Operational limits for the agent",
       "properties": {
-        "payments.refund": {
+        "finance.payment.refund": {
           "type": "object",
           "properties": {
             "currency_limits": {

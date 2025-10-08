@@ -12,9 +12,13 @@
     "owner_type": "org",
     "assurance_level": "L2",
     "status": "active",
-    "capabilities": ["payments.refund", "data.export", "repo.release.publish"],
+    "capabilities": [
+      "finance.payment.refund",
+      "data.export",
+      "repo.release.publish"
+    ],
     "limits": {
-      "payments.refund": {
+      "finance.payment.refund": {
         "currency_limits": {
           "USD": {
             "max_per_tx": 5000,

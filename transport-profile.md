@@ -15,7 +15,7 @@ The primary transport mechanism for web-based agent interactions.
 Agents must include the following headers in HTTP requests:
 
 ```
-X-Agent-Passport: ap_128094d3
+X-Agent-Passport: ap_a2d10232c6534523812423eec8a1425c
 X-Agent-Signature: ed25519:abc123def456...
 X-Agent-Timestamp: 1640995200
 X-Agent-Nonce: nonce_123456789
@@ -37,11 +37,11 @@ For real-time agent communications.
 ```json
 {
   "type": "agent_handshake",
-  "passport_id": "ap_128094d3",
+  "passport_id": "ap_a2d10232c6534523812423eec8a1425c",
   "signature": "ed25519:abc123def456...",
   "timestamp": 1640995200,
   "nonce": "nonce_123456789",
-  "capabilities": ["payments.refund", "data.export"]
+  "capabilities": ["finance.payment.refund", "data.export"]
 }
 ```
 
@@ -50,7 +50,7 @@ For real-time agent communications.
 ```json
 {
   "type": "agent_message",
-  "passport_id": "ap_128094d3",
+  "passport_id": "ap_a2d10232c6534523812423eec8a1425c",
   "message_id": "msg_123456789",
   "payload": {
     // Message content
@@ -91,7 +91,7 @@ For asynchronous agent communication.
 ```json
 {
   "headers": {
-    "x-agent-passport": "ap_128094d3",
+    "x-agent-passport": "ap_a2d10232c6534523812423eec8a1425c",
     "x-agent-signature": "ed25519:abc123def456...",
     "x-agent-timestamp": "1640995200",
     "x-agent-nonce": "nonce_123456789"
@@ -113,7 +113,7 @@ ap_[a-zA-Z0-9]{8,16}
 ```
 
 Examples:
-- `ap_128094d3`
+- `ap_a2d10232c6534523812423eec8a1425c`
 - `ap_abc123def456`
 - `ap_myagent001`
 
@@ -203,7 +203,7 @@ _agent._tcp.example.com. 300 IN SRV 20 5 443 agent2.example.com.
 ```
 _agent._tcp.local. PTR agent1._agent._tcp.local.
 agent1._agent._tcp.local. SRV 0 0 443 agent1.local.
-agent1._agent._tcp.local. TXT "passport=ap_128094d3"
+agent1._agent._tcp.local. TXT "passport=ap_a2d10232c6534523812423eec8a1425c"
 ```
 
 ### Agent Registry
@@ -214,10 +214,10 @@ Centralized agent discovery service:
 {
   "agents": [
     {
-      "passport_id": "ap_128094d3",
+      "passport_id": "ap_a2d10232c6534523812423eec8a1425c",
       "name": "Acme Support Bot",
       "endpoint": "https://agent1.example.com",
-      "capabilities": ["payments.refund", "data.export"],
+      "capabilities": ["finance.payment.refund", "data.export"],
       "status": "active",
       "last_seen": "2025-01-16T10:30:00Z"
     }
@@ -245,7 +245,7 @@ Centralized agent discovery service:
     "code": "SIGNATURE_INVALID",
     "message": "Invalid agent signature",
     "details": {
-      "passport_id": "ap_128094d3",
+      "passport_id": "ap_a2d10232c6534523812423eec8a1425c",
       "expected": "ed25519:abc123...",
       "received": "ed25519:xyz789..."
     }

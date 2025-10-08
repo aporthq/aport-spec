@@ -102,7 +102,7 @@ const decision = importVCToDecision(vc);
   "assurance_level": "L2",
   "status": "active",
   "capabilities": [
-    { "id": "payments.refund", "params": { "currency_limits": { "USD": { "max_per_tx": 5000 } } } }
+    { "id": "finance.payment.refund", "params": { "currency_limits": { "USD": { "max_per_tx": 5000 } } } }
   ],
   "limits": { /* policy limits */ },
   "regions": ["US", "CA"],
@@ -118,7 +118,7 @@ const decision = importVCToDecision(vc);
 ```json
 {
   "decision_id": "550e8400-e29b-41d4-a716-446655440002",
-  "policy_id": "payments.refund.v1",
+  "policy_id": "finance.payment.refund.v1",
   "agent_id": "550e8400-e29b-41d4-a716-446655440000",
   "owner_id": "org_12345678",
   "assurance_level": "L2",

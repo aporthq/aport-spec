@@ -246,12 +246,14 @@ class SimpleTestRunner {
     // Simplified policy evaluation for testing
     const { packId, passport, context } = testCase;
 
-    if (packId === "payments.refund.v1") {
+    if (packId === "finance.payment.refund.v1") {
       const amount = context.amount || 0;
       const currency = context.currency || "USD";
 
       const limits =
-        passport.limits?.["payments.refund"]?.currency_limits?.[currency];
+        passport.limits?.["finance.payment.refund"]?.currency_limits?.[
+          currency
+        ];
       if (limits && amount > limits.max_per_tx) {
         return {
           valid: false,
@@ -262,7 +264,7 @@ class SimpleTestRunner {
       }
     }
 
-    if (packId === "data.export.v1") {
+    if (packId === "data.export.create.v1") {
       const includePii = context.include_pii || false;
       const allowPii = passport.limits?.["data.export"]?.allow_pii || false;
 

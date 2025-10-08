@@ -161,7 +161,7 @@ Reviewers will check for:
 npm run test:conformance
 
 # Run specific test suite
-npm run test:conformance -- --suite payments.refund.v1
+npm run test:conformance -- --suite finance.payment.refund.v1
 
 # Run with verbose output
 npm run test:conformance -- --verbose
