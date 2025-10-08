@@ -146,7 +146,7 @@
       },
       "timestamp": "2025-01-16T10:30:00Z",
       "request_id": "req_123456790",
-      "path": "/api/verify/ap_128094d3",
+      "path": "/api/verify/ap_a2d10232c6534523812423eec8a1425c",
       "method": "GET",
       "status_code": 429,
       "retry_after": 3600,
@@ -160,15 +160,15 @@
     {
       "error": {
         "code": "passport_not_found",
-        "message": "Passport with ID ap_128094d3 not found",
+        "message": "Passport with ID ap_a2d10232c6534523812423eec8a1425c not found",
         "details": {
-          "passport_id": "ap_128094d3",
+          "passport_id": "ap_a2d10232c6534523812423eec8a1425c",
           "suggestion": "Verify the passport ID is correct and the passport exists"
         }
       },
       "timestamp": "2025-01-16T10:30:00Z",
       "request_id": "req_123456791",
-      "path": "/api/verify/ap_128094d3",
+      "path": "/api/verify/ap_a2d10232c6534523812423eec8a1425c",
       "method": "GET",
       "status_code": 404
     },
@@ -177,14 +177,14 @@
         "code": "policy_denied",
         "message": "Agent lacks required capabilities for this policy",
         "details": {
-          "policy_id": "payments.refund.v1",
-          "required_capabilities": ["payments.refund"],
+          "policy_id": "finance.payment.refund.v1",
+          "required_capabilities": ["finance.payment.refund"],
           "agent_capabilities": ["data.export"]
         }
       },
       "timestamp": "2025-01-16T10:30:00Z",
       "request_id": "req_123456792",
-      "path": "/api/verify/policy/payments.refund.v1",
+      "path": "/api/verify/policy/finance.payment.refund.v1",
       "method": "POST",
       "status_code": 403
     }

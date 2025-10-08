@@ -312,13 +312,15 @@ class ConformanceRunner {
     let allow = true;
     const reasons: any[] = [];
 
-    if (packId === "payments.refund.v1") {
+    if (packId === "finance.payment.refund.v1") {
       const amount = context.amount || 0;
       const currency = context.currency || "USD";
 
       // Check currency limits
       const limits =
-        passport.limits?.["payments.refund"]?.currency_limits?.[currency];
+        passport.limits?.["finance.payment.refund"]?.currency_limits?.[
+          currency
+        ];
       if (limits) {
         if (amount > limits.max_per_tx) {
           allow = false;
@@ -337,7 +339,7 @@ class ConformanceRunner {
       }
     }
 
-    if (packId === "data.export.v1") {
+    if (packId === "data.export.create.v1") {
       const includePii = context.include_pii || false;
       const allowPii = passport.limits?.["data.export"]?.allow_pii || false;
 

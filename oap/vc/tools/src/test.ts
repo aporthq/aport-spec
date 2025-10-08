@@ -23,13 +23,13 @@ const samplePassport: OAPPassport = {
   status: "active",
   capabilities: [
     {
-      id: "payments.refund",
+      id: "finance.payment.refund",
       params: { currency_limits: { USD: { max_per_tx: 5000 } } },
     },
     { id: "data.export", params: { max_rows: 100000 } },
   ],
   limits: {
-    "payments.refund": {
+    "finance.payment.refund": {
       currency_limits: {
         USD: { max_per_tx: 5000, daily_cap: 50000 },
       },
@@ -50,7 +50,7 @@ const samplePassport: OAPPassport = {
 // Sample OAP Decision
 const sampleDecision: OAPDecision = {
   decision_id: "550e8400-e29b-41d4-a716-446655440002",
-  policy_id: "payments.refund.v1",
+  policy_id: "finance.payment.refund.v1",
   agent_id: "550e8400-e29b-41d4-a716-446655440000",
   owner_id: "org_12345678",
   assurance_level: "L2",

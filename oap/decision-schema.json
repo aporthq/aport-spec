@@ -29,7 +29,7 @@
       "type": "string",
       "pattern": "^[a-z0-9]+(\\.[a-z0-9]+)*\\.v[0-9]+$",
       "description": "Policy pack identifier",
-      "example": "payments.refund.v1"
+      "example": "finance.payment.refund.v1"
     },
     "agent_id": {
       "type": "string",

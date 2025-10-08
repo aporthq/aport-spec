@@ -9,7 +9,7 @@
   "status": "active",
   "capabilities": [
     {
-      "id": "payments.refund",
+      "id": "finance.payment.refund",
       "params": {
         "max_amount": 1000,
         "currency": "USD"
@@ -20,7 +20,7 @@
     }
   ],
   "limits": {
-    "payments.refund": {
+    "finance.payment.refund": {
       "currency_limits": {
         "USD": {
           "max_per_tx": 1000,
