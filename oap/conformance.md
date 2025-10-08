@@ -161,7 +161,7 @@ npm install
 npm test
 
 # Run specific test suite
-npm test -- --suite payments.refund.v1
+npm test -- --suite finance.payment.refund.v1
 
 # Run performance tests
 npm test -- --suite performance

@@ -81,7 +81,7 @@ A passport represents either a template (canonical agent identity) or an instanc
   "status": "active",
   "capabilities": [
     {
-      "id": "payments.refund",
+      "id": "finance.payment.refund",
       "params": {
         "max_amount": 5000,
         "currency": "USD"
@@ -92,7 +92,7 @@ A passport represents either a template (canonical agent identity) or an instanc
     }
   ],
   "limits": {
-    "payments.refund": {
+    "finance.payment.refund": {
       "currency_limits": {
         "USD": {
           "max_per_tx": 5000,
@@ -132,7 +132,7 @@ A decision object represents the result of policy evaluation for a specific acti
 ### Required Fields
 
 - `decision_id` (UUID v4): Unique identifier for the decision
-- `policy_id` (string): Policy pack identifier (e.g., "payments.refund.v1")
+- `policy_id` (string): Policy pack identifier (e.g., "finance.payment.refund.v1")
 - `agent_id` (UUID v4): Agent that was evaluated
 - `owner_id` (string): Owner ID from the passport
 - `assurance_level` (enum): Assurance level from the passport
@@ -153,7 +153,7 @@ A decision object represents the result of policy evaluation for a specific acti
 ```json
 {
   "decision_id": "550e8400-e29b-41d4-a716-446655440002",
-  "policy_id": "payments.refund.v1",
+  "policy_id": "finance.payment.refund.v1",
   "agent_id": "550e8400-e29b-41d4-a716-446655440000",
   "owner_id": "org_12345678",
   "assurance_level": "L2",
@@ -240,8 +240,8 @@ Keys are resolved using the following format:
 
 ### Policy Pack Versioning
 
-- Policy packs are frozen by ID (e.g., `payments.refund.v1`)
-- Changes require new version (e.g., `payments.refund.v2`)
+- Policy packs are frozen by ID (e.g., `finance.payment.refund.v1`)
+- Changes require new version (e.g., `finance.payment.refund.v2`)
 - Old versions remain valid and supported
 
 ## Security

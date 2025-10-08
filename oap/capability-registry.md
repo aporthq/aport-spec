@@ -15,7 +15,7 @@ The Open Agent Passport (OAP) Capability Registry defines standardized capabilit
 Capabilities use a hierarchical namespace format: `category.action`
 
 Examples:
-- `payments.refund` - Financial refund operations
+- `finance.payment.refund` - Financial refund operations
 - `data.export` - Data export operations
 - `repo.release.publish` - Repository release operations
 
@@ -25,7 +25,7 @@ Examples:
 
 Policy packs define the complete policy logic for one or more capabilities. They include:
 
-- **Policy ID**: Unique identifier (e.g., `payments.refund.v1`)
+- **Policy ID**: Unique identifier (e.g., `finance.payment.refund.v1`)
 - **Required capabilities**: List of capabilities this pack handles
 - **Minimum assurance**: Required assurance level
 - **Context schema**: Expected input data structure
@@ -34,13 +34,13 @@ Policy packs define the complete policy logic for one or more capabilities. They
 
 ## Standard Policy Packs
 
-### payments.refund.v1
+### finance.payment.refund.v1
 
-### payments.refund.v1
+### finance.payment.refund.v1
 
 **Purpose**: Protects financial refund operations with amount limits, currency controls, and idempotency requirements.
 
-**Required Capability**: `payments.refund`
+**Required Capability**: `finance.payment.refund`
 
 **Minimum Assurance**: L2 (GitHub Verified)
 
@@ -56,7 +56,7 @@ Policy packs define the complete policy logic for one or more capabilities. They
 **Limits Structure**:
 ```json
 {
-  "payments.refund": {
+  "finance.payment.refund": {
     "currency_limits": {
       "USD": {
         "max_per_tx": 5000,
@@ -81,7 +81,7 @@ Policy packs define the complete policy logic for one or more capabilities. They
 - `oap.invalid_reason` - Invalid reason code
 - `oap.idempotency_conflict` - Idempotency key already used
 
-### data.export.v1
+### data.export.create.v1
 
 **Purpose**: Protects data export operations with row limits, PII controls, and collection restrictions.
 

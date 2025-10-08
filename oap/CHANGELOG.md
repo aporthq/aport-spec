@@ -13,8 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Core passport schema with template/instance support
 - Decision schema with Ed25519 signing and JCS canonicalization
 - Capability registry with three initial policy packs:
-  - `payments.refund.v1` - Financial transaction controls
-  - `data.export.v1` - Data export with PII controls
+  - `finance.payment.refund.v1` - Financial transaction controls
+  - `data.export.create.v1` - Data export with PII controls
   - `repo.release.publish.v1` - Repository release controls
 - Assurance level system (L0-L4) with verification methods
 - Security model with Ed25519 signatures and key resolution

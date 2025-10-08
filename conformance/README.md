@@ -83,10 +83,10 @@ pnpm test --endpoint https://your-oap-api.com --passport-file passport.json --de
 ### Policy Pack Testing
 ```bash
 # Test specific policy pack against your implementation
-pnpm test --endpoint https://your-oap-api.com --pack payments.refund.v1
+pnpm test --endpoint https://your-oap-api.com --pack finance.payment.refund.v1
 
 # Test with verbose output
-pnpm test --endpoint https://your-oap-api.com --pack data.export.v1 --verbose
+pnpm test --endpoint https://your-oap-api.com --pack data.export.create.v1 --verbose
 ```
 
 ### Reporting
@@ -127,15 +127,15 @@ pnpm run test:simple
 🔍 OAP Conformance Test Runner v1.0.0
 
 ✅ Loaded 5 test cases
-Running data.export.v1:allow_users...
+Running data.export.create.v1:allow_users...
   ✅ PASS
-Running data.export.v1:deny_pii...
+Running data.export.create.v1:deny_pii...
   ❌ FAIL: Policy evaluation failed: PII export not allowed
-Running payments.refund.v1:allow_50usd...
+Running finance.payment.refund.v1:allow_50usd...
   ✅ PASS
-Running payments.refund.v1:deny_150usd...
+Running finance.payment.refund.v1:deny_150usd...
   ❌ FAIL: Policy evaluation failed: Amount 15000 exceeds max per transaction 5000
-Running payments.refund.v1:deny_currency...
+Running finance.payment.refund.v1:deny_currency...
   ✅ PASS
 
 📊 Test Results
@@ -144,9 +144,9 @@ Running payments.refund.v1:deny_currency...
 📈 Success Rate: 60.0%
 
 ❌ Failed Tests:
-  • data.export.v1:deny_pii
+  • data.export.create.v1:deny_pii
     - Policy evaluation failed: PII export not allowed
-  • payments.refund.v1:deny_150usd
+  • finance.payment.refund.v1:deny_150usd
     - Policy evaluation failed: Amount 15000 exceeds max per transaction 5000
 
 🎯 Conformance testing complete!
@@ -213,11 +213,11 @@ spec/conformance/
 │   ├── ed25519.ts        # Ed25519 signature verification
 │   └── cases.ts          # Test case definitions
 ├── cases/                 # Test cases by policy pack
-│   ├── payments.refund.v1/       # Refunds policy pack tests
+│   ├── finance.payment.refund.v1/       # Refunds policy pack tests
 │   │   ├── passports/     # Test passport templates
 │   │   ├── contexts/      # Test contexts
 │   │   └── expected/      # Expected decisions
-│   ├── data.export.v1/   # Data export policy pack tests
+│   ├── data.export.create.v1/   # Data export policy pack tests
 │   └── repo.release.publish.v1/ # Repository release tests
 └── reports/              # Generated test reports
 ```

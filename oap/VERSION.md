@@ -17,7 +17,7 @@ The Open Agent Passport specification follows [Semantic Versioning](https://semv
 - Initial release of OAP specification
 - Core passport and decision schemas
 - Ed25519 signing and JCS canonicalization
-- Three initial policy packs: payments.refund.v1, data.export.v1, repo.release.publish.v1
+- Three initial policy packs: finance.payment.refund.v1, data.export.create.v1, repo.release.publish.v1
 - Verifiable Credential interoperability
 - Conformance testing framework
 

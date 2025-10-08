@@ -58,7 +58,7 @@ export class SchemaValidator {
 
     // Basic context validation based on pack ID
     switch (packId) {
-      case "payments.refund.v1":
+      case "finance.payment.refund.v1":
         if (!context.amount || typeof context.amount !== "number") {
           errors.push("amount is required and must be a number");
         }
@@ -70,7 +70,7 @@ export class SchemaValidator {
         }
         break;
 
-      case "data.export.v1":
+      case "data.export.create.v1":
         if (!context.collection || typeof context.collection !== "string") {
           errors.push("collection is required and must be a string");
         }

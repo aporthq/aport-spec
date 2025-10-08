@@ -161,5 +161,8 @@ All specifications are released under the MIT License. See [LICENSE](./LICENSE) 
 [![Specification Status](https://img.shields.io/badge/Status-Stable-green.svg)](./oap/oap-spec.md)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
-
 </div>
+
+---
+
+**Last Updated**: 2025-10-08 14:54:16 UTC

@@ -23,13 +23,13 @@ const passport = {
   status: "active",
   capabilities: [
     {
-      id: "payments.refund",
+      id: "finance.payment.refund",
       params: { currency_limits: { USD: { max_per_tx: 5000 } } },
     },
     { id: "data.export", params: { max_rows: 100000 } },
   ],
   limits: {
-    "payments.refund": {
+    "finance.payment.refund": {
       currency_limits: {
         USD: { max_per_tx: 5000, daily_cap: 50000 },
       },

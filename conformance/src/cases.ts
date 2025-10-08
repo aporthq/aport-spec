@@ -63,18 +63,18 @@ export interface PolicyEvaluationResult {
  */
 export const STANDARD_TEST_CASES: PolicyPackTestCase[] = [
   {
-    packId: "payments.refund.v1",
+    packId: "finance.payment.refund.v1",
     name: "Refunds Policy Pack",
-    description: "Tests for payments.refund.v1 policy pack",
+    description: "Tests for finance.payment.refund.v1 policy pack",
     passports: [],
     contexts: [],
     expected: [],
     receipts: [],
   },
   {
-    packId: "data.export.v1",
+    packId: "data.export.create.v1",
     name: "Data Export Policy Pack",
-    description: "Tests for data.export.v1 policy pack",
+    description: "Tests for data.export.create.v1 policy pack",
     passports: [],
     contexts: [],
     expected: [],
@@ -127,8 +127,8 @@ export const ASSURANCE_LEVELS = {
  * Policy pack requirements for conformance testing
  */
 export const POLICY_PACK_REQUIREMENTS = {
-  "payments.refund.v1": {
-    requiredCapabilities: ["payments.refund"],
+  "finance.payment.refund.v1": {
+    requiredCapabilities: ["finance.payment.refund"],
     minAssurance: "L2",
     requiredContextFields: ["amount", "currency", "order_id"],
     optionalContextFields: [
@@ -138,7 +138,7 @@ export const POLICY_PACK_REQUIREMENTS = {
       "idempotency_key",
     ],
   },
-  "data.export.v1": {
+  "data.export.create.v1": {
     requiredCapabilities: ["data.export"],
     minAssurance: "L1",
     requiredContextFields: ["collection"],
@@ -248,10 +248,10 @@ export class TestCaseGenerator {
     shouldPass: boolean
   ): TestCase {
     return {
-      id: `payments.refund.v1:${amount}${currency}_${
+      id: `finance.payment.refund.v1:${amount}${currency}_${
         shouldPass ? "allow" : "deny"
       }`,
-      packId: "payments.refund.v1",
+      packId: "finance.payment.refund.v1",
       contextName: `${amount}${currency}_${shouldPass ? "allow" : "deny"}`,
       passport: {
         passport_id: "550e8400-e29b-41d4-a716-446655440000",
@@ -261,9 +261,9 @@ export class TestCaseGenerator {
         owner_type: "org",
         assurance_level: "L2",
         status: "active",
-        capabilities: [{ id: "payments.refund" }],
+        capabilities: [{ id: "finance.payment.refund" }],
         limits: {
-          "payments.refund": {
+          "finance.payment.refund": {
             currency_limits: {
               [currency]: {
                 max_per_tx: shouldPass ? amount * 2 : amount / 2,
@@ -287,7 +287,7 @@ export class TestCaseGenerator {
       },
       expected: {
         decision_id: "test_decision_id",
-        policy_id: "payments.refund.v1",
+        policy_id: "finance.payment.refund.v1",
         agent_id: "550e8400-e29b-41d4-a716-446655440000",
         owner_id: "org_12345678",
         assurance_level: "L2",
@@ -314,10 +314,10 @@ export class TestCaseGenerator {
     shouldPass: boolean
   ): TestCase {
     return {
-      id: `data.export.v1:${collection}_${estimatedRows}_${
+      id: `data.export.create.v1:${collection}_${estimatedRows}_${
         includePii ? "pii" : "no_pii"
       }_${shouldPass ? "allow" : "deny"}`,
-      packId: "data.export.v1",
+      packId: "data.export.create.v1",
       contextName: `${collection}_${estimatedRows}_${
         includePii ? "pii" : "no_pii"
       }_${shouldPass ? "allow" : "deny"}`,
@@ -352,7 +352,7 @@ export class TestCaseGenerator {
       },
       expected: {
         decision_id: "test_decision_id",
-        policy_id: "data.export.v1",
+        policy_id: "data.export.create.v1",
         agent_id: "550e8400-e29b-41d4-a716-446655440001",
         owner_id: "org_12345678",
         assurance_level: "L1",
