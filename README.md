@@ -10,7 +10,7 @@ As AI agents become the primary interface for digital commerce, a fundamental qu
 
 Traditional identity verification answers *who* built an agent. But in a world where agents complete transactions in milliseconds, we need something more: **real-time enforcement of what agents are allowed to do at the point of action.**
 
-The Open Agent Passport (OAP) v1.0 is the first specification designed for this new reality—a lightweight, cryptographically verifiable credential that enables **pre-act authorization** for AI agents across any platform.
+The Open Agent Passport (OAP) v1.0 is the first specification designed for this new reality—a lightweight, cryptographically verifiable credential that enables **Pre-action authorization** for AI agents across any platform.
 
 ---
 
@@ -25,7 +25,7 @@ The Open Agent Passport (OAP) v1.0 is the first specification designed for this 
 ### The Solution
 OAP provides the **runtime trust layer** that makes agentic commerce safe and scalable:
 
-- **Pre-act authorization** before sensitive operations
+- **Pre-action authorization** before sensitive operations
 - **Cryptographically signed decisions** for audit trails  
 - **Global suspend capabilities** for instant risk mitigation
 - **Standardized policy packs** for consistent enforcement
