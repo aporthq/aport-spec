@@ -8,6 +8,14 @@
  * File system operations are skipped in Workers since they're not available there.
  */
 
+import {
+  canonicalizeJsonLd,
+  signEd25519,
+  verifyEd25519,
+  bytesToBase64url,
+  publicKeyToBytes,
+} from "./crypto-utils";
+
 // Types
 export interface OAPPassport {
   agent_id: string;
@@ -80,10 +88,10 @@ let oapContext: any = null;
 /**
  * Convert OAP Passport to Verifiable Credential
  */
-export function exportPassportToVC(
+export async function exportPassportToVC(
   passport: OAPPassport,
   registryKey: RegistryKey
-): VerifiableCredential {
+): Promise<VerifiableCredential> {
   // Validate passport structure
   if (!isValidOAPPassport(passport)) {
     throw new Error("Invalid OAP passport structure");
@@ -96,17 +104,22 @@ export function exportPassportToVC(
   // Construct verification method based on issuer type
   let verificationMethod: string;
   if (issuer.startsWith("did:")) {
-    // DID-based issuer (e.g., did:web:api.aport.io:agents:ap_abc123#key-1)
+    // DID-based issuer (preferred)
+    // Resolves via DID Document: https://aport.io/api/agents/{agent_id}/did.json
+    // Public key is in the DID Document's verificationMethod array
     verificationMethod = `${issuer}#key-1`;
   } else {
-    // URL-based issuer (legacy)
+    // URL-based issuer (legacy fallback)
+    // Requires well-known endpoint: https://aport.io/.well-known/oap/keys.json
+    // Note: This endpoint should return JWK format with the specified kid
     verificationMethod = `${registryKey.issuer}/.well-known/oap/keys.json#${registryKey.kid}`;
   }
 
-  const vc: VerifiableCredential = {
+  // Create VC structure (without proof first, proof is added after signing)
+  const vcWithoutProof: Omit<VerifiableCredential, "proof"> = {
     "@context": [
       "https://www.w3.org/2018/credentials/v1",
-      "https://github.com/aporthq/aport-spec/oap/vc/context-oap-v1.jsonld",
+      "https://raw.githubusercontent.com/aporthq/aport-spec/refs/heads/main/oap/vc/context-oap-v1.jsonld",
     ],
     type: ["VerifiableCredential", "OAPPassportCredential"],
     credentialSubject: {
@@ -131,12 +144,23 @@ export function exportPassportToVC(
     issuer: issuer,
     issuanceDate: passport.created_at,
     expirationDate: computeExpirationDate(passport),
+  };
+
+  // Sign the credential (signs the credential without proof)
+  const jws = await signCredential(
+    vcWithoutProof as VerifiableCredential,
+    registryKey
+  );
+
+  // Add proof to complete the VC
+  const vc: VerifiableCredential = {
+    ...vcWithoutProof,
     proof: {
       type: "Ed25519Signature2020",
       created: passport.created_at,
       verificationMethod: verificationMethod,
       proofPurpose: "assertionMethod",
-      jws: signCredential(passport, registryKey),
+      jws: jws,
     },
   };
 
@@ -146,20 +170,20 @@ export function exportPassportToVC(
 /**
  * Convert OAP Decision to Verifiable Credential
  */
-export function exportDecisionToVC(
+export async function exportDecisionToVC(
   decision: OAPDecision,
   registryKey: RegistryKey
-): VerifiableCredential {
+): Promise<VerifiableCredential> {
   // Validate decision structure
   if (!isValidOAPDecision(decision)) {
     throw new Error("Invalid OAP decision structure");
   }
 
-  // Create VC structure
-  const vc: VerifiableCredential = {
+  // Create VC structure (without proof first)
+  const vcWithoutProof: Omit<VerifiableCredential, "proof"> = {
     "@context": [
       "https://www.w3.org/2018/credentials/v1",
-      "https://github.com/aporthq/aport-spec/oap/vc/context-oap-v1.jsonld",
+      "https://raw.githubusercontent.com/aporthq/aport-spec/refs/heads/main/oap/vc/context-oap-v1.jsonld",
     ],
     type: ["VerifiableCredential", "OAPDecisionReceipt"],
     credentialSubject: {
@@ -184,12 +208,25 @@ export function exportDecisionToVC(
     expirationDate: new Date(
       new Date(decision.created_at).getTime() + decision.expires_in * 1000
     ).toISOString(),
+  };
+
+  // Sign the credential
+  const jws = await signCredential(
+    vcWithoutProof as VerifiableCredential,
+    registryKey
+  );
+
+  // Add proof to complete the VC
+  const vc: VerifiableCredential = {
+    ...vcWithoutProof,
     proof: {
       type: "Ed25519Signature2020",
       created: decision.created_at,
+      // For decisions, use registry's well-known endpoint
+      // This should resolve to: https://aport.io/.well-known/oap/keys.json
       verificationMethod: `${registryKey.issuer}/.well-known/oap/keys.json#${registryKey.kid}`,
       proofPurpose: "assertionMethod",
-      jws: signCredential(decision, registryKey),
+      jws: jws,
     },
   };
 
@@ -199,14 +236,18 @@ export function exportDecisionToVC(
 /**
  * Convert Verifiable Credential to OAP Passport
  */
-export function importVCToPassport(vc: VerifiableCredential): OAPPassport {
+export async function importVCToPassport(
+  vc: VerifiableCredential,
+  publicKey?: string | Uint8Array
+): Promise<OAPPassport> {
   // Validate VC structure
   if (!isValidVC(vc)) {
     throw new Error("Invalid VC structure");
   }
 
   // Verify signature
-  if (!verifyCredentialSignature(vc)) {
+  const isValid = await verifyCredentialSignature(vc, publicKey);
+  if (!isValid) {
     throw new Error("Invalid VC signature");
   }
 
@@ -224,14 +265,18 @@ export function importVCToPassport(vc: VerifiableCredential): OAPPassport {
 /**
  * Convert Verifiable Credential to OAP Decision
  */
-export function importVCToDecision(vc: VerifiableCredential): OAPDecision {
+export async function importVCToDecision(
+  vc: VerifiableCredential,
+  publicKey?: string | Uint8Array
+): Promise<OAPDecision> {
   // Validate VC structure
   if (!isValidVC(vc)) {
     throw new Error("Invalid VC structure");
   }
 
   // Verify signature
-  if (!verifyCredentialSignature(vc)) {
+  const isValid = await verifyCredentialSignature(vc, publicKey);
+  if (!isValid) {
     throw new Error("Invalid VC signature");
   }
 
@@ -319,16 +364,163 @@ function computeExpirationDate(passport: OAPPassport | any): string {
   return expiration.toISOString();
 }
 
-function signCredential(data: any, registryKey: RegistryKey): string {
-  // In a real implementation, this would use Ed25519 signing
-  // For now, return a placeholder signature
-  const payload = JSON.stringify(data);
-  const signature = Buffer.from(payload).toString("base64");
-  return `eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.${signature}.placeholder`;
+/**
+ * Sign a credential using Ed25519
+ *
+ * @param vc - The Verifiable Credential to sign (without proof)
+ * @param registryKey - Registry key containing private key
+ * @returns JWS in compact format: <header>.<payload>.<signature>
+ *
+ * Note: JWS is safe to expose publicly - it's a cryptographic signature meant for verification.
+ * Anyone can verify it using the public key from verificationMethod.
+ *
+ * According to W3C VC spec, we sign the credential WITHOUT the proof, then add the proof.
+ *
+ * @see https://www.w3.org/TR/vc-data-model/#proofs-signatures
+ * @see https://w3c-ccg.github.io/lds-ed25519-2020/#ed25519signature2020
+ */
+async function signCredential(
+  vc: VerifiableCredential,
+  registryKey: RegistryKey
+): Promise<string> {
+  if (!registryKey.privateKey) {
+    throw new Error(
+      "REGISTRY_PRIVATE_KEY is required for VC signing. Set it in environment variables."
+    );
+  }
+
+  // Step 1: Create credential without proof (proof is added after signing)
+  const credentialWithoutProof = {
+    "@context": vc["@context"],
+    type: vc.type,
+    credentialSubject: vc.credentialSubject,
+    issuer: vc.issuer,
+    issuanceDate: vc.issuanceDate,
+    expirationDate: vc.expirationDate,
+  };
+
+  // Step 2: Canonicalize the JSON-LD representation
+  const canonicalMessage = await canonicalizeJsonLd(credentialWithoutProof);
+
+  // Step 3: Sign using Ed25519
+  const signatureBytes = await signEd25519(
+    canonicalMessage,
+    registryKey.privateKey
+  );
+
+  // Step 4: Format as JWS (compact format)
+  // JWS header for Ed25519
+  const header = {
+    alg: "EdDSA",
+    b64: false,
+    crit: ["b64"],
+  };
+  const headerB64 = bytesToBase64url(
+    new TextEncoder().encode(JSON.stringify(header))
+  );
+
+  // For Ed25519Signature2020, we use detached payload
+  // The signature is over the canonicalized credential
+  const signatureB64 = bytesToBase64url(signatureBytes);
+
+  // Return compact JWS format: header..signature (detached payload)
+  // Note: For Ed25519Signature2020, the payload is the canonicalized credential
+  return `${headerB64}..${signatureB64}`;
 }
 
-function verifyCredentialSignature(vc: VerifiableCredential): boolean {
-  // In a real implementation, this would verify the Ed25519 signature
-  // For now, return true for demonstration
-  return true;
+/**
+ * Verify a Verifiable Credential's Ed25519 signature
+ *
+ * @param vc - The Verifiable Credential to verify
+ * @param publicKey - Optional public key. If not provided, will attempt to resolve from verificationMethod
+ * @returns Promise<boolean> - true if signature is valid
+ *
+ * @see https://www.w3.org/TR/vc-data-model/#proofs-signatures
+ * @see https://w3c-ccg.github.io/lds-ed25519-2020/#ed25519signature2020
+ */
+export async function verifyCredentialSignature(
+  vc: VerifiableCredential,
+  publicKey?: string | Uint8Array
+): Promise<boolean> {
+  if (!vc.proof || !vc.proof.jws) {
+    return false;
+  }
+
+  try {
+    // Step 1: Recreate credential without proof
+    const credentialWithoutProof = {
+      "@context": vc["@context"],
+      type: vc.type,
+      credentialSubject: vc.credentialSubject,
+      issuer: vc.issuer,
+      issuanceDate: vc.issuanceDate,
+      expirationDate: vc.expirationDate,
+    };
+
+    // Step 2: Canonicalize the JSON-LD representation (same as signing)
+    const canonicalMessage = await canonicalizeJsonLd(credentialWithoutProof);
+
+    // Step 3: Extract signature from JWS
+    const jwsParts = vc.proof.jws.split(".");
+    if (jwsParts.length !== 3) {
+      console.error("Invalid JWS format. Expected header.payload.signature");
+      return false;
+    }
+
+    const signatureB64 = jwsParts[2];
+    const signatureBytes = base64urlToBytes(signatureB64);
+
+    // Step 4: Get public key
+    let publicKeyBytes: Uint8Array;
+
+    if (publicKey) {
+      // Use provided public key
+      publicKeyBytes = publicKeyToBytes(publicKey);
+    } else {
+      // TODO: Resolve public key from verificationMethod
+      // For now, require public key to be provided
+      throw new Error(
+        "Public key is required for verification. Provide it or implement verificationMethod resolution."
+      );
+    }
+
+    // Step 5: Verify signature
+    return await verifyEd25519(
+      canonicalMessage,
+      signatureBytes,
+      publicKeyBytes
+    );
+  } catch (error) {
+    console.error("VC signature verification error:", error);
+    return false;
+  }
 }
+
+/**
+ * Convert base64url string to Uint8Array
+ */
+function base64urlToBytes(base64url: string): Uint8Array {
+  // Convert base64url to base64
+  let base64 = base64url.replace(/-/g, "+").replace(/_/g, "/");
+
+  // Add padding if needed
+  while (base64.length % 4) {
+    base64 += "=";
+  }
+
+  // Decode base64
+  if (typeof Buffer !== "undefined") {
+    return Buffer.from(base64, "base64");
+  } else {
+    // For Cloudflare Workers, use atob
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+    return bytes;
+  }
+}
+
+// Export Verifiable Presentation functions
+export * from "./vp";
