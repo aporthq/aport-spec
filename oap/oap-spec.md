@@ -67,6 +67,9 @@ A passport represents either a template (canonical agent identity) or an instanc
 
 - `parent_agent_id` (UUID v4): Required for instances, references the template
 - `metadata` (object): Additional metadata
+- `did` (string): W3C Decentralized Identifier in did:web format (e.g., "did:web:api.aport.io:agents:ap_abc123")
+- `expires_at` (ISO 8601): Expiration timestamp for ephemeral credentials
+- `never_expires` (boolean): Explicit flag for perpetual credentials (default: true if expires_at not set)
 
 #### Example
 
@@ -104,6 +107,8 @@ A passport represents either a template (canonical agent identity) or an instanc
     }
   },
   "regions": ["US", "CA"],
+  "did": "did:web:api.aport.io:agents:ap_abc123",
+  "never_expires": true,
   "created_at": "2024-01-01T00:00:00Z",
   "updated_at": "2024-01-15T10:30:00Z",
   "version": "1.0.0"
