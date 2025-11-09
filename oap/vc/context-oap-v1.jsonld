@@ -124,6 +124,14 @@
     "message": {
       "@id": "oap:message",
       "@type": "xsd:string"
+    },
+    "expires_at": {
+      "@id": "oap:expiresAt",
+      "@type": "xsd:dateTime"
+    },
+    "never_expires": {
+      "@id": "oap:neverExpires",
+      "@type": "xsd:boolean"
     }
   }
 }

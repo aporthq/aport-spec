@@ -3,14 +3,10 @@
  *
  * Provides functions to convert between OAP objects and Verifiable Credentials
  * for interoperability with VC/DID ecosystems.
+ *
+ * Note: This module is designed to work in both Node.js and Cloudflare Workers environments.
+ * File system operations are skipped in Workers since they're not available there.
  */
-
-import { readFileSync } from "fs";
-import { join, dirname } from "path";
-import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 // Types
 export interface OAPPassport {
@@ -71,18 +67,15 @@ export interface RegistryKey {
   publicKey?: string;
 }
 
-// Load schemas
-const passportSchema = JSON.parse(
-  readFileSync(join(__dirname, "../../passport-schema.json"), "utf8")
-);
+// Load schemas (only in Node.js environment, not in Cloudflare Workers)
+// These are loaded but not currently used - kept for future schema validation
+// In Cloudflare Workers, we skip loading since file system APIs are not available
+let passportSchema: any = null;
+let decisionSchema: any = null;
+let oapContext: any = null;
 
-const decisionSchema = JSON.parse(
-  readFileSync(join(__dirname, "../../decision-schema.json"), "utf8")
-);
-
-const oapContext = JSON.parse(
-  readFileSync(join(__dirname, "../context-oap-v1.jsonld"), "utf8")
-);
+// Skip schema loading in Cloudflare Workers (import.meta.url is undefined)
+// The schemas are not used in the current code, so this is safe
 
 /**
  * Convert OAP Passport to Verifiable Credential
@@ -97,6 +90,19 @@ export function exportPassportToVC(
   }
 
   // Create VC structure
+  // Use DID as issuer if available, otherwise fall back to registry URL
+  const issuer = (passport as any).did || registryKey.issuer;
+
+  // Construct verification method based on issuer type
+  let verificationMethod: string;
+  if (issuer.startsWith("did:")) {
+    // DID-based issuer (e.g., did:web:api.aport.io:agents:ap_abc123#key-1)
+    verificationMethod = `${issuer}#key-1`;
+  } else {
+    // URL-based issuer (legacy)
+    verificationMethod = `${registryKey.issuer}/.well-known/oap/keys.json#${registryKey.kid}`;
+  }
+
   const vc: VerifiableCredential = {
     "@context": [
       "https://www.w3.org/2018/credentials/v1",
@@ -120,14 +126,15 @@ export function exportPassportToVC(
       created_at: passport.created_at,
       updated_at: passport.updated_at,
       version: passport.version,
+      did: (passport as any).did, // Include DID in credential subject
     },
-    issuer: registryKey.issuer,
+    issuer: issuer,
     issuanceDate: passport.created_at,
     expirationDate: computeExpirationDate(passport),
     proof: {
       type: "Ed25519Signature2020",
       created: passport.created_at,
-      verificationMethod: `${registryKey.issuer}/.well-known/oap/keys.json#${registryKey.kid}`,
+      verificationMethod: verificationMethod,
       proofPurpose: "assertionMethod",
       jws: signCredential(passport, registryKey),
     },
@@ -294,8 +301,19 @@ export function isValidOAPDecision(decision: any): boolean {
 /**
  * Helper Functions
  */
-function computeExpirationDate(passport: OAPPassport): string {
-  // Default to 1 year from creation
+function computeExpirationDate(passport: OAPPassport | any): string {
+  // Use native expiry if set
+  if (passport.expires_at) {
+    return passport.expires_at;
+  }
+
+  // Check never_expires flag
+  if (passport.never_expires) {
+    // W3C VC spec requires expirationDate, use far future for perpetual credentials
+    return new Date("2999-12-31T23:59:59Z").toISOString();
+  }
+
+  // Default: 1 year from creation
   const created = new Date(passport.created_at);
   const expiration = new Date(created.getTime() + 365 * 24 * 60 * 60 * 1000);
   return expiration.toISOString();
