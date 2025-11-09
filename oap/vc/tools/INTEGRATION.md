@@ -100,7 +100,7 @@ const passport = {
 
 // Your registry key
 const registryKey = {
-  issuer: 'https://api.aport.dev',
+  issuer: 'https://aport.io',
   kid: 'key-2025-01',
   publicKey: 'your-ed25519-public-key',
   privateKey: 'your-ed25519-private-key'
