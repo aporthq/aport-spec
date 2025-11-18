@@ -21,7 +21,7 @@ An OAP passport can be exported as a Verifiable Credential with the following st
 {
   "@context": [
     "https://www.w3.org/2018/credentials/v1",
-    "https://github.com/aporthq/aport-spec/oap/vc/context-oap-v1.jsonld"
+    "https://raw.githubusercontent.com/aporthq/aport-spec/refs/heads/main/oap/vc/context-oap-v1.jsonld"
   ],
   "type": ["VerifiableCredential", "OAPPassportCredential"],
   "credentialSubject": {
@@ -54,13 +54,13 @@ An OAP passport can be exported as a Verifiable Credential with the following st
     "updated_at": "2024-01-15T10:30:00Z",
     "version": "1.0.0"
   },
-  "issuer": "https://api.aport.dev",
+  "issuer": "https://aport.io",
   "issuanceDate": "2024-01-01T00:00:00Z",
   "expirationDate": "2025-01-01T00:00:00Z",
   "proof": {
     "type": "Ed25519Signature2020",
     "created": "2024-01-01T00:00:00Z",
-    "verificationMethod": "https://api.aport.dev/.well-known/oap/keys.json#key-2025-01",
+    "verificationMethod": "https://aport.io/.well-known/oap/keys.json#key-2025-01",
     "proofPurpose": "assertionMethod",
     "jws": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9..."
   }
@@ -86,7 +86,7 @@ An OAP decision can be exported as a Verifiable Credential receipt:
 {
   "@context": [
     "https://www.w3.org/2018/credentials/v1",
-    "https://github.com/aporthq/aport-spec/oap/vc/context-oap-v1.jsonld"
+    "https://raw.githubusercontent.com/aporthq/aport-spec/refs/heads/main/oap/vc/context-oap-v1.jsonld"
   ],
   "type": ["VerifiableCredential", "OAPDecisionReceipt"],
   "credentialSubject": {
@@ -106,13 +106,13 @@ An OAP decision can be exported as a Verifiable Credential receipt:
     "expires_in": 3600,
     "passport_digest": "sha256:abcd1234efgh5678ijkl9012mnop3456qrst7890uvwx1234yzab5678cdef"
   },
-  "issuer": "https://api.aport.dev",
+  "issuer": "https://aport.io",
   "issuanceDate": "2024-01-15T10:30:00Z",
   "expirationDate": "2024-01-15T11:30:00Z",
   "proof": {
     "type": "Ed25519Signature2020",
     "created": "2024-01-15T10:30:00Z",
-    "verificationMethod": "https://api.aport.dev/.well-known/oap/keys.json#key-2025-01",
+    "verificationMethod": "https://aport.io/.well-known/oap/keys.json#key-2025-01",
     "proofPurpose": "assertionMethod",
     "jws": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9..."
   }
@@ -160,11 +160,11 @@ function exportPassportToVC(passport, registryKey) {
   const vc = {
     "@context": [
       "https://www.w3.org/2018/credentials/v1",
-      "https://github.com/aporthq/aport-spec/oap/vc/context-oap-v1.jsonld"
+      "https://raw.githubusercontent.com/aporthq/aport-spec/refs/heads/main/oap/vc/context-oap-v1.jsonld"
     ],
     "type": ["VerifiableCredential", "OAPPassportCredential"],
     "credentialSubject": passport,
-    "issuer": "https://api.aport.dev",
+    "issuer": "https://aport.io",
     "issuanceDate": passport.created_at,
     "expirationDate": computeExpirationDate(passport),
     "proof": {
@@ -253,7 +253,7 @@ function exportPassportToVC(passport, registryKey) {
   const vc = {
     "@context": [
       "https://www.w3.org/2018/credentials/v1",
-      "https://github.com/aporthq/aport-spec/oap/vc/context-oap-v1.jsonld"
+      "https://raw.githubusercontent.com/aporthq/aport-spec/refs/heads/main/oap/vc/context-oap-v1.jsonld"
     ],
     "type": ["VerifiableCredential", "OAPPassportCredential"],
     "credentialSubject": {
@@ -303,7 +303,7 @@ function exportDecisionToVC(decision, registryKey) {
   const vc = {
     "@context": [
       "https://www.w3.org/2018/credentials/v1",
-      "https://github.com/aporthq/aport-spec/oap/vc/context-oap-v1.jsonld"
+      "https://raw.githubusercontent.com/aporthq/aport-spec/refs/heads/main/oap/vc/context-oap-v1.jsonld"
     ],
     "type": ["VerifiableCredential", "OAPDecisionReceipt"],
     "credentialSubject": {

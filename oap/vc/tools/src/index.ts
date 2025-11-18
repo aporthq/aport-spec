@@ -8,7 +8,25 @@
  * File system operations are skipped in Workers since they're not available there.
  */
 
-// Types
+import {
+  canonicalizeJsonLd,
+  signEd25519,
+  verifyEd25519,
+  bytesToBase64url,
+  publicKeyToBytes,
+} from "./crypto-utils";
+
+/**
+ * Type Definitions
+ *
+ * These interfaces define the structure of OAP objects and W3C Verifiable Credentials.
+ */
+
+/**
+ * Open Agent Passport (OAP) structure
+ *
+ * Represents an agent's identity, capabilities, and authorization metadata.
+ */
 export interface OAPPassport {
   agent_id: string;
   kind: "template" | "instance";
@@ -27,6 +45,11 @@ export interface OAPPassport {
   version: string;
 }
 
+/**
+ * Open Agent Passport (OAP) Decision structure
+ *
+ * Represents a policy verification decision with authorization result and metadata.
+ */
 export interface OAPDecision {
   decision_id: string;
   policy_id: string;
@@ -44,6 +67,12 @@ export interface OAPDecision {
   remaining_daily_cap?: Record<string, number>;
 }
 
+/**
+ * W3C Verifiable Credential structure
+ *
+ * Compliant with W3C VC Data Model 1.1. The proof contains the cryptographic
+ * signature in JWS format.
+ */
 export interface VerifiableCredential {
   "@context": string[];
   type: string[];
@@ -60,6 +89,11 @@ export interface VerifiableCredential {
   };
 }
 
+/**
+ * Registry key configuration for signing Verifiable Credentials
+ *
+ * Contains issuer information and cryptographic keys for signing VCs.
+ */
 export interface RegistryKey {
   issuer: string;
   kid: string;
@@ -67,46 +101,69 @@ export interface RegistryKey {
   publicKey?: string;
 }
 
-// Load schemas (only in Node.js environment, not in Cloudflare Workers)
-// These are loaded but not currently used - kept for future schema validation
-// In Cloudflare Workers, we skip loading since file system APIs are not available
-let passportSchema: any = null;
-let decisionSchema: any = null;
-let oapContext: any = null;
-
-// Skip schema loading in Cloudflare Workers (import.meta.url is undefined)
-// The schemas are not used in the current code, so this is safe
+// Note: Schema validation is not currently implemented but may be added in the future
+// for additional validation beyond the basic structure checks in isValidOAPPassport/isValidOAPDecision
 
 /**
  * Convert OAP Passport to Verifiable Credential
+ *
+ * Exports an Open Agent Passport (OAP) as a W3C Verifiable Credential (VC),
+ * compliant with W3C VC Data Model 1.1. The credential is cryptographically
+ * signed using Ed25519 and includes a DID-based verification method.
+ *
+ * @param passport - The OAP Passport to convert
+ * @param registryKey - Registry key containing issuer info and private key for signing
+ * @returns Promise resolving to a Verifiable Credential
+ * @throws Error if passport structure is invalid or signing fails
+ *
+ * @example
+ * ```typescript
+ * const vc = await exportPassportToVC(passport, {
+ *   issuer: "https://aport.io",
+ *   kid: "ap_registry_ed25519_2024",
+ *   privateKey: process.env.REGISTRY_PRIVATE_KEY
+ * });
+ * ```
+ *
+ * @see https://www.w3.org/TR/vc-data-model/
  */
-export function exportPassportToVC(
+export async function exportPassportToVC(
   passport: OAPPassport,
   registryKey: RegistryKey
-): VerifiableCredential {
+): Promise<VerifiableCredential> {
   // Validate passport structure
   if (!isValidOAPPassport(passport)) {
     throw new Error("Invalid OAP passport structure");
   }
 
-  // Create VC structure
-  // Use DID as issuer if available, otherwise fall back to registry URL
-  const issuer = (passport as any).did || registryKey.issuer;
-
-  // Construct verification method based on issuer type
-  let verificationMethod: string;
-  if (issuer.startsWith("did:")) {
-    // DID-based issuer (e.g., did:web:api.aport.io:agents:ap_abc123#key-1)
-    verificationMethod = `${issuer}#key-1`;
+  // Generate DID if not present in passport
+  // DID format: did:web:aport.io:api:agents:{agent_id}
+  let did: string;
+  if ((passport as any).did) {
+    did = (passport as any).did;
   } else {
-    // URL-based issuer (legacy)
-    verificationMethod = `${registryKey.issuer}/.well-known/oap/keys.json#${registryKey.kid}`;
+    // Generate DID from agent_id
+    // This matches the DID resolution endpoint: /api/agents/{agent_id}/did.json
+    const baseUrl = registryKey.issuer
+      .replace(/^https?:\/\//, "")
+      .replace(/\/$/, "");
+    did = `did:web:${baseUrl}:api:agents:${passport.agent_id}`;
   }
 
-  const vc: VerifiableCredential = {
+  // Use DID as issuer (W3C VC spec prefers DIDs over URLs)
+  const issuer = did;
+
+  // Construct verification method using DID (W3C VC best practice)
+  // DID-based verificationMethod resolves via DID Document
+  // DID Document is at: https://aport.io/api/agents/{agent_id}/did.json
+  // Public key is in the DID Document's verificationMethod array with id: {did}#key-1
+  const verificationMethod = `${did}#key-1`;
+
+  // Create VC structure (without proof first, proof is added after signing)
+  const vcWithoutProof: Omit<VerifiableCredential, "proof"> = {
     "@context": [
       "https://www.w3.org/2018/credentials/v1",
-      "https://github.com/aporthq/aport-spec/oap/vc/context-oap-v1.jsonld",
+      "https://raw.githubusercontent.com/aporthq/aport-spec/refs/heads/main/oap/vc/context-oap-v1.jsonld",
     ],
     type: ["VerifiableCredential", "OAPPassportCredential"],
     credentialSubject: {
@@ -126,17 +183,28 @@ export function exportPassportToVC(
       created_at: passport.created_at,
       updated_at: passport.updated_at,
       version: passport.version,
-      did: (passport as any).did, // Include DID in credential subject
+      did: did, // Include DID in credential subject
     },
     issuer: issuer,
     issuanceDate: passport.created_at,
     expirationDate: computeExpirationDate(passport),
+  };
+
+  // Sign the credential (signs the credential without proof)
+  const jws = await signCredential(
+    vcWithoutProof as VerifiableCredential,
+    registryKey
+  );
+
+  // Add proof to complete the VC
+  const vc: VerifiableCredential = {
+    ...vcWithoutProof,
     proof: {
       type: "Ed25519Signature2020",
       created: passport.created_at,
       verificationMethod: verificationMethod,
       proofPurpose: "assertionMethod",
-      jws: signCredential(passport, registryKey),
+      jws: jws,
     },
   };
 
@@ -145,21 +213,39 @@ export function exportPassportToVC(
 
 /**
  * Convert OAP Decision to Verifiable Credential
+ *
+ * Exports an OAP Decision as a W3C Verifiable Credential, representing a
+ * policy verification decision receipt. The credential is cryptographically
+ * signed using Ed25519.
+ *
+ * @param decision - The OAP Decision to convert
+ * @param registryKey - Registry key containing issuer info and private key for signing
+ * @returns Promise resolving to a Verifiable Credential
+ * @throws Error if decision structure is invalid or signing fails
+ *
+ * @example
+ * ```typescript
+ * const vc = await exportDecisionToVC(decision, {
+ *   issuer: "https://aport.io",
+ *   kid: "ap_registry_ed25519_2024",
+ *   privateKey: process.env.REGISTRY_PRIVATE_KEY
+ * });
+ * ```
  */
-export function exportDecisionToVC(
+export async function exportDecisionToVC(
   decision: OAPDecision,
   registryKey: RegistryKey
-): VerifiableCredential {
+): Promise<VerifiableCredential> {
   // Validate decision structure
   if (!isValidOAPDecision(decision)) {
     throw new Error("Invalid OAP decision structure");
   }
 
-  // Create VC structure
-  const vc: VerifiableCredential = {
+  // Create VC structure (without proof first)
+  const vcWithoutProof: Omit<VerifiableCredential, "proof"> = {
     "@context": [
       "https://www.w3.org/2018/credentials/v1",
-      "https://github.com/aporthq/aport-spec/oap/vc/context-oap-v1.jsonld",
+      "https://raw.githubusercontent.com/aporthq/aport-spec/refs/heads/main/oap/vc/context-oap-v1.jsonld",
     ],
     type: ["VerifiableCredential", "OAPDecisionReceipt"],
     credentialSubject: {
@@ -184,12 +270,25 @@ export function exportDecisionToVC(
     expirationDate: new Date(
       new Date(decision.created_at).getTime() + decision.expires_in * 1000
     ).toISOString(),
+  };
+
+  // Sign the credential
+  const jws = await signCredential(
+    vcWithoutProof as VerifiableCredential,
+    registryKey
+  );
+
+  // Add proof to complete the VC
+  const vc: VerifiableCredential = {
+    ...vcWithoutProof,
     proof: {
       type: "Ed25519Signature2020",
       created: decision.created_at,
+      // For decisions, use registry's well-known endpoint
+      // This should resolve to: https://aport.io/.well-known/oap/keys.json
       verificationMethod: `${registryKey.issuer}/.well-known/oap/keys.json#${registryKey.kid}`,
       proofPurpose: "assertionMethod",
-      jws: signCredential(decision, registryKey),
+      jws: jws,
     },
   };
 
@@ -198,15 +297,33 @@ export function exportDecisionToVC(
 
 /**
  * Convert Verifiable Credential to OAP Passport
+ *
+ * Imports a W3C Verifiable Credential back to an OAP Passport format.
+ * Verifies the credential's signature before conversion.
+ *
+ * @param vc - The Verifiable Credential to convert
+ * @param publicKey - Optional public key for signature verification. If not provided,
+ *                    verification will fail unless DID resolution is implemented.
+ * @returns Promise resolving to an OAP Passport
+ * @throws Error if VC structure is invalid, signature is invalid, or passport structure is invalid
+ *
+ * @example
+ * ```typescript
+ * const passport = await importVCToPassport(vc, publicKey);
+ * ```
  */
-export function importVCToPassport(vc: VerifiableCredential): OAPPassport {
+export async function importVCToPassport(
+  vc: VerifiableCredential,
+  publicKey?: string | Uint8Array
+): Promise<OAPPassport> {
   // Validate VC structure
   if (!isValidVC(vc)) {
     throw new Error("Invalid VC structure");
   }
 
   // Verify signature
-  if (!verifyCredentialSignature(vc)) {
+  const isValid = await verifyCredentialSignature(vc, publicKey);
+  if (!isValid) {
     throw new Error("Invalid VC signature");
   }
 
@@ -223,15 +340,33 @@ export function importVCToPassport(vc: VerifiableCredential): OAPPassport {
 
 /**
  * Convert Verifiable Credential to OAP Decision
+ *
+ * Imports a W3C Verifiable Credential back to an OAP Decision format.
+ * Verifies the credential's signature before conversion.
+ *
+ * @param vc - The Verifiable Credential to convert
+ * @param publicKey - Optional public key for signature verification. If not provided,
+ *                    verification will fail unless DID resolution is implemented.
+ * @returns Promise resolving to an OAP Decision
+ * @throws Error if VC structure is invalid, signature is invalid, or decision structure is invalid
+ *
+ * @example
+ * ```typescript
+ * const decision = await importVCToDecision(vc, publicKey);
+ * ```
  */
-export function importVCToDecision(vc: VerifiableCredential): OAPDecision {
+export async function importVCToDecision(
+  vc: VerifiableCredential,
+  publicKey?: string | Uint8Array
+): Promise<OAPDecision> {
   // Validate VC structure
   if (!isValidVC(vc)) {
     throw new Error("Invalid VC structure");
   }
 
   // Verify signature
-  if (!verifyCredentialSignature(vc)) {
+  const isValid = await verifyCredentialSignature(vc, publicKey);
+  if (!isValid) {
     throw new Error("Invalid VC signature");
   }
 
@@ -249,6 +384,13 @@ export function importVCToDecision(vc: VerifiableCredential): OAPDecision {
 /**
  * Validation Functions
  */
+
+/**
+ * Validates that an object conforms to the Verifiable Credential structure
+ *
+ * @param vc - Object to validate
+ * @returns true if the object has all required VC fields
+ */
 export function isValidVC(vc: any): boolean {
   return (
     vc &&
@@ -261,6 +403,12 @@ export function isValidVC(vc: any): boolean {
   );
 }
 
+/**
+ * Validates that an object conforms to the OAP Passport structure
+ *
+ * @param passport - Object to validate
+ * @returns true if the object has all required passport fields
+ */
 export function isValidOAPPassport(passport: any): boolean {
   return (
     passport &&
@@ -280,6 +428,12 @@ export function isValidOAPPassport(passport: any): boolean {
   );
 }
 
+/**
+ * Validates that an object conforms to the OAP Decision structure
+ *
+ * @param decision - Object to validate
+ * @returns true if the object has all required decision fields
+ */
 export function isValidOAPDecision(decision: any): boolean {
   return (
     decision &&
@@ -301,6 +455,16 @@ export function isValidOAPDecision(decision: any): boolean {
 /**
  * Helper Functions
  */
+
+/**
+ * Computes the expiration date for a passport-based VC
+ *
+ * Uses passport.expires_at if set, otherwise checks never_expires flag,
+ * or defaults to 1 year from creation.
+ *
+ * @param passport - Passport object with expiration metadata
+ * @returns ISO 8601 timestamp string
+ */
 function computeExpirationDate(passport: OAPPassport | any): string {
   // Use native expiry if set
   if (passport.expires_at) {
@@ -319,16 +483,172 @@ function computeExpirationDate(passport: OAPPassport | any): string {
   return expiration.toISOString();
 }
 
-function signCredential(data: any, registryKey: RegistryKey): string {
-  // In a real implementation, this would use Ed25519 signing
-  // For now, return a placeholder signature
-  const payload = JSON.stringify(data);
-  const signature = Buffer.from(payload).toString("base64");
-  return `eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.${signature}.placeholder`;
+/**
+ * Sign a credential using Ed25519
+ *
+ * @param vc - The Verifiable Credential to sign (without proof)
+ * @param registryKey - Registry key containing private key
+ * @returns JWS in compact format: <header>.<payload>.<signature>
+ *
+ * Note: JWS is safe to expose publicly - it's a cryptographic signature meant for verification.
+ * Anyone can verify it using the public key from verificationMethod.
+ *
+ * According to W3C VC spec, we sign the credential WITHOUT the proof, then add the proof.
+ *
+ * @see https://www.w3.org/TR/vc-data-model/#proofs-signatures
+ * @see https://w3c-ccg.github.io/lds-ed25519-2020/#ed25519signature2020
+ */
+async function signCredential(
+  vc: VerifiableCredential,
+  registryKey: RegistryKey
+): Promise<string> {
+  if (!registryKey.privateKey) {
+    throw new Error(
+      "REGISTRY_PRIVATE_KEY is required for VC signing. Set it in environment variables."
+    );
+  }
+
+  // Step 1: Create credential without proof (proof is added after signing)
+  const credentialWithoutProof = {
+    "@context": vc["@context"],
+    type: vc.type,
+    credentialSubject: vc.credentialSubject,
+    issuer: vc.issuer,
+    issuanceDate: vc.issuanceDate,
+    expirationDate: vc.expirationDate,
+  };
+
+  // Step 2: Canonicalize the JSON-LD representation
+  const canonicalMessage = await canonicalizeJsonLd(credentialWithoutProof);
+
+  // Step 3: Sign using Ed25519
+  const signatureBytes = await signEd25519(
+    canonicalMessage,
+    registryKey.privateKey
+  );
+
+  // Step 4: Format as JWS (compact format)
+  // JWS header for Ed25519
+  const header = {
+    alg: "EdDSA",
+    b64: false,
+    crit: ["b64"],
+  };
+  const headerB64 = bytesToBase64url(
+    new TextEncoder().encode(JSON.stringify(header))
+  );
+
+  // For Ed25519Signature2020, we use detached payload
+  // The signature is over the canonicalized credential
+  const signatureB64 = bytesToBase64url(signatureBytes);
+
+  // Return compact JWS format: header..signature (detached payload)
+  // Note: For Ed25519Signature2020, the payload is the canonicalized credential
+  return `${headerB64}..${signatureB64}`;
 }
 
-function verifyCredentialSignature(vc: VerifiableCredential): boolean {
-  // In a real implementation, this would verify the Ed25519 signature
-  // For now, return true for demonstration
-  return true;
+/**
+ * Verify a Verifiable Credential's Ed25519 signature
+ *
+ * @param vc - The Verifiable Credential to verify
+ * @param publicKey - Optional public key for signature verification. If not provided,
+ *                    verification will fail unless DID resolution is implemented.
+ * @returns Promise<boolean> - true if signature is valid, false otherwise
+ *
+ * @see https://www.w3.org/TR/vc-data-model/#proofs-signatures
+ * @see https://w3c-ccg.github.io/lds-ed25519-2020/#ed25519signature2020
+ */
+export async function verifyCredentialSignature(
+  vc: VerifiableCredential,
+  publicKey?: string | Uint8Array
+): Promise<boolean> {
+  if (!vc.proof || !vc.proof.jws) {
+    return false;
+  }
+
+  try {
+    // Step 1: Recreate credential without proof
+    const credentialWithoutProof = {
+      "@context": vc["@context"],
+      type: vc.type,
+      credentialSubject: vc.credentialSubject,
+      issuer: vc.issuer,
+      issuanceDate: vc.issuanceDate,
+      expirationDate: vc.expirationDate,
+    };
+
+    // Step 2: Canonicalize the JSON-LD representation (same as signing)
+    const canonicalMessage = await canonicalizeJsonLd(credentialWithoutProof);
+
+    // Step 3: Extract signature from JWS
+    const jwsParts = vc.proof.jws.split(".");
+    if (jwsParts.length !== 3) {
+      // Invalid JWS format - expected header..signature (detached payload)
+      return false;
+    }
+
+    const signatureB64 = jwsParts[2];
+    const signatureBytes = base64urlToBytes(signatureB64);
+
+    // Step 4: Get public key
+    let publicKeyBytes: Uint8Array;
+
+    if (publicKey) {
+      // Use provided public key
+      publicKeyBytes = publicKeyToBytes(publicKey);
+    } else {
+      // Public key resolution from verificationMethod is not yet implemented
+      // This would require DID Document resolution, which is environment-dependent
+      // For now, require public key to be provided explicitly
+      throw new Error(
+        "Public key is required for verification. Provide it explicitly or implement DID resolution to fetch from verificationMethod."
+      );
+    }
+
+    // Step 5: Verify signature
+    return await verifyEd25519(
+      canonicalMessage,
+      signatureBytes,
+      publicKeyBytes
+    );
+  } catch (error) {
+    // Return false on any verification error (invalid signature, malformed data, etc.)
+    // Error details are not exposed to prevent information leakage
+    return false;
+  }
 }
+
+/**
+ * Convert base64url string to Uint8Array
+ *
+ * Handles both Node.js (Buffer) and browser/Workers (atob) environments.
+ *
+ * @param base64url - Base64url-encoded string
+ * @returns Decoded bytes
+ * @internal
+ */
+function base64urlToBytes(base64url: string): Uint8Array {
+  // Convert base64url to base64
+  let base64 = base64url.replace(/-/g, "+").replace(/_/g, "/");
+
+  // Add padding if needed
+  while (base64.length % 4) {
+    base64 += "=";
+  }
+
+  // Decode base64
+  if (typeof Buffer !== "undefined") {
+    return Buffer.from(base64, "base64");
+  } else {
+    // For Cloudflare Workers, use atob
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+    return bytes;
+  }
+}
+
+// Export Verifiable Presentation functions
+export * from "./vp";

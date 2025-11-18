@@ -32,7 +32,7 @@ const decision = {
 
 // Sample Registry Key
 const registryKey = {
-  issuer: "https://api.aport.dev",
+  issuer: "https://aport.io",
   kid: "key-2025-01",
   publicKey: "placeholder-public-key",
   privateKey: "placeholder-private-key",

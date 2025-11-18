@@ -83,7 +83,7 @@ const decision = importVCToDecision(vc);
 
 ```json
 {
-  "issuer": "https://api.aport.dev",
+  "issuer": "https://aport.io",
   "kid": "key-2025-01",
   "publicKey": "your-ed25519-public-key",
   "privateKey": "your-ed25519-private-key"
@@ -220,7 +220,7 @@ node dist/cli.js import --type passport --input passport.vc.json --output passpo
 {
   "@context": [
     "https://www.w3.org/2018/credentials/v1",
-    "https://github.com/aporthq/aport-spec/oap/vc/context-oap-v1.jsonld"
+    "https://raw.githubusercontent.com/aporthq/aport-spec/refs/heads/main/oap/vc/context-oap-v1.jsonld"
   ],
   "type": ["VerifiableCredential", "OAPPassportCredential"],
   "credentialSubject": {
@@ -229,7 +229,7 @@ node dist/cli.js import --type passport --input passport.vc.json --output passpo
     "spec_version": "oap/1.0",
     ...
   },
-  "issuer": "https://api.aport.dev",
+  "issuer": "https://aport.io",
   "issuanceDate": "2024-01-01T00:00:00Z",
   "expirationDate": "2025-01-01T00:00:00Z",
   "proof": {

@@ -9,7 +9,7 @@ function exportPassportToVC(passport, registryKey) {
   return {
     "@context": [
       "https://www.w3.org/2018/credentials/v1",
-      "https://github.com/aporthq/aport-spec/oap/vc/context-oap-v1.jsonld",
+      "https://raw.githubusercontent.com/aporthq/aport-spec/refs/heads/main/oap/vc/context-oap-v1.jsonld",
     ],
     type: ["VerifiableCredential", "OAPPassportCredential"],
     credentialSubject: passport,
@@ -32,7 +32,7 @@ function exportDecisionToVC(decision, registryKey) {
   return {
     "@context": [
       "https://www.w3.org/2018/credentials/v1",
-      "https://github.com/aporthq/aport-spec/oap/vc/context-oap-v1.jsonld",
+      "https://raw.githubusercontent.com/aporthq/aport-spec/refs/heads/main/oap/vc/context-oap-v1.jsonld",
     ],
     type: ["VerifiableCredential", "OAPDecisionReceipt"],
     credentialSubject: decision,
@@ -105,7 +105,7 @@ const sampleDecision = {
 };
 
 const registryKey = {
-  issuer: "https://api.aport.dev",
+  issuer: "https://aport.io",
   kid: "key-2025-01",
 };
 

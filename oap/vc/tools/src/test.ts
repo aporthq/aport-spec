@@ -67,7 +67,7 @@ const sampleDecision: OAPDecision = {
 
 // Sample Registry Key
 const sampleRegistryKey: RegistryKey = {
-  issuer: "https://api.aport.dev",
+  issuer: "https://aport.io",
   kid: "key-2025-01",
   publicKey: "placeholder-public-key",
   privateKey: "placeholder-private-key",
@@ -79,7 +79,7 @@ async function runTests() {
   try {
     // Test 1: Export Passport to VC
     console.log("1. Testing Passport → VC conversion...");
-    const passportVC = exportPassportToVC(samplePassport, sampleRegistryKey);
+    const passportVC = await exportPassportToVC(samplePassport, sampleRegistryKey);
     console.log("   ✅ Passport exported to VC successfully");
     console.log(`   📄 VC Type: ${passportVC.type.join(", ")}`);
     console.log(`   🏢 Issuer: ${passportVC.issuer}`);
@@ -88,7 +88,7 @@ async function runTests() {
 
     // Test 2: Export Decision to VC
     console.log("2. Testing Decision → VC conversion...");
-    const decisionVC = exportDecisionToVC(sampleDecision, sampleRegistryKey);
+    const decisionVC = await exportDecisionToVC(sampleDecision, sampleRegistryKey);
     console.log("   ✅ Decision exported to VC successfully");
     console.log(`   📄 VC Type: ${decisionVC.type.join(", ")}`);
     console.log(`   🏢 Issuer: ${decisionVC.issuer}`);
@@ -97,7 +97,7 @@ async function runTests() {
 
     // Test 3: Import VC to Passport
     console.log("3. Testing VC → Passport conversion...");
-    const importedPassport = importVCToPassport(passportVC);
+    const importedPassport = await importVCToPassport(passportVC);
     console.log("   ✅ VC imported to Passport successfully");
     console.log(`   🆔 Agent ID: ${importedPassport.agent_id}`);
     console.log(`   📋 Kind: ${importedPassport.kind}`);
@@ -108,7 +108,7 @@ async function runTests() {
 
     // Test 4: Import VC to Decision
     console.log("4. Testing VC → Decision conversion...");
-    const importedDecision = importVCToDecision(decisionVC);
+    const importedDecision = await importVCToDecision(decisionVC);
     console.log("   ✅ VC imported to Decision successfully");
     console.log(`   🆔 Decision ID: ${importedDecision.decision_id}`);
     console.log(`   📋 Policy ID: ${importedDecision.policy_id}`);
@@ -119,8 +119,8 @@ async function runTests() {
     console.log(
       "5. Testing round-trip conversion (Passport → VC → Passport)..."
     );
-    const roundTripPassport = importVCToPassport(
-      exportPassportToVC(samplePassport, sampleRegistryKey)
+    const roundTripPassport = await importVCToPassport(
+      await exportPassportToVC(samplePassport, sampleRegistryKey)
     );
     const isEqual =
       JSON.stringify(samplePassport) === JSON.stringify(roundTripPassport);

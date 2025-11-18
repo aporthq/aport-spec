@@ -16,7 +16,7 @@ const __dirname = dirname(__filename);
 const vc = {
   "@context": [
     "https://www.w3.org/2018/credentials/v1",
-    "https://github.com/aporthq/aport-spec/oap/vc/context-oap-v1.jsonld",
+    "https://raw.githubusercontent.com/aporthq/aport-spec/refs/heads/main/oap/vc/context-oap-v1.jsonld",
   ],
   type: ["VerifiableCredential", "OAPPassportCredential"],
   credentialSubject: {
@@ -52,14 +52,14 @@ const vc = {
     updated_at: "2024-01-15T10:30:00Z",
     version: "1.0.0",
   },
-  issuer: "https://api.aport.dev",
+  issuer: "https://aport.io",
   issuanceDate: "2024-01-01T00:00:00Z",
   expirationDate: "2025-01-01T00:00:00Z",
   proof: {
     type: "Ed25519Signature2020",
     created: "2024-01-01T00:00:00Z",
     verificationMethod:
-      "https://api.aport.dev/.well-known/oap/keys.json#key-2025-01",
+      "https://aport.io/.well-known/oap/keys.json#ap_registry_ed25519_2024",
     proofPurpose: "assertionMethod",
     jws: "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJjcmVkZW50aWFsU3ViamVjdCI6eyJhZ2VudF9pZCI6IjU1MGU4NDAwLWUyOWItNDFkNC1hNzE2LTQ0NjY1NTQ0MDAwMCIsImtpbmQiOiJ0ZW1wbGF0ZSIsInNwZWNfdmVyc2lvbiI6Im9hcC8xLjAiLCJvd25lcl9pZCI6Im9yZ18xMjM0NTY3OCIsIm93bmVyX3R5cGUiOiJvcmciLCJhc3N1cmFuY2VfbGV2ZWwiOiJMMiIsInN0YXR1cyI6ImFjdGl2ZSIsImNhcGFiaWxpdGllcyI6W3siaWQiOiJwYXltZW50cy5yZWZ1bmQiLCJwYXJhbXMiOnsiY3VycmVuY3lfbGltaXRzIjp7IlVTRCI6eyJtYXhfcGVyX3R4Ijo1MDAwfX19fSx7ImlkIjoiZGF0YS5leHBvcnQiLCJwYXJhbXMiOnsibWF4X3Jvd3MiOjEwMDAwMH19XSwibGltaXRzIjp7InBheW1lbnRzLnJlZnVuZCI6eyJjdXJyZW5jeV9saW1pdHMiOnsiVVNEIjp7Im1heF9wZXJfdHgiOjUwMDAsImRhaWx5X2NhcCI6NTAwMDB9fSwicmVhc29uX2NvZGVzIjpbImN1c3RvbWVyX3JlcXVlc3QiLCJkZWZlY3RpdmVfcHJvZHVjdCJdLCJpZGVtcG90ZW5jeV9yZXF1aXJlZCI6dHJ1ZX19LCJyZWdpb25zIjpbIlVTIiwiQ0EiXSwibWV0YWRhdGEiOnsibmFtZSI6IkN1c3RvbWVyIFN1cHBvcnQgQUkiLCJkZXNjcmlwdGlvbiI6IkFJIGFnZW50IGZvciBjdXN0b21lciBzdXBwb3J0IG9wZXJhdGlvbnMifSwiY3JlYXRlZF9hdCI6IjIwMjQtMDEtMDFUMDA6MDA6MDBaIiwidXBkYXRlZF9hdCI6IjIwMjQtMDEtMTVUMTA6MzA6MDBaIiwidmVyc2lvbiI6IjEuMC4wIn0sImlzc3VlciI6Imh0dHBzOi8vYXBpLmFwb3J0LmRldiIsImlzc3VhbmNlRGF0ZSI6IjIwMjQtMDEtMDFUMDA6MDA6MDBaIiwiZXhwaXJhdGlvbkRhdGUiOiIyMDI1LTAxLTAxVDAwOjAwOjAwWiJ9.signature",
   },

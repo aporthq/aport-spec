@@ -52,9 +52,9 @@ program
       let vc: VerifiableCredential;
 
       if (options.type === "passport") {
-        vc = exportPassportToVC(inputData as OAPPassport, registryKey);
+        vc = await exportPassportToVC(inputData as OAPPassport, registryKey);
       } else if (options.type === "decision") {
-        vc = exportDecisionToVC(inputData as OAPDecision, registryKey);
+        vc = await exportDecisionToVC(inputData as OAPDecision, registryKey);
       } else {
         throw new Error('Invalid type. Must be "passport" or "decision"');
       }
@@ -105,9 +105,9 @@ program
       let oapObject: OAPPassport | OAPDecision;
 
       if (options.type === "passport") {
-        oapObject = importVCToPassport(vc);
+        oapObject = await importVCToPassport(vc);
       } else if (options.type === "decision") {
-        oapObject = importVCToDecision(vc);
+        oapObject = await importVCToDecision(vc);
       } else {
         throw new Error('Invalid type. Must be "passport" or "decision"');
       }
@@ -196,7 +196,7 @@ program
     try {
       // Generate a sample registry key
       const registryKey: RegistryKey = {
-        issuer: "https://api.aport.dev",
+        issuer: "https://aport.io",
         kid: "key-" + Date.now(),
         publicKey: "placeholder-public-key",
         privateKey: "placeholder-private-key",

@@ -1,7 +1,7 @@
 {
   "@context": [
     "https://www.w3.org/2018/credentials/v1",
-    "https://github.com/aporthq/aport-spec/oap/vc/context-oap-v1.jsonld"
+    "https://raw.githubusercontent.com/aporthq/aport-spec/refs/heads/main/oap/vc/context-oap-v1.jsonld"
   ],
   "type": ["VerifiableCredential", "OAPPassportCredential"],
   "credentialSubject": {
@@ -55,13 +55,13 @@
     "updated_at": "2024-01-15T10:30:00Z",
     "version": "1.0.0"
   },
-  "issuer": "https://api.aport.dev",
+  "issuer": "https://aport.io",
   "issuanceDate": "2024-01-01T00:00:00Z",
   "expirationDate": "2025-01-01T00:00:00Z",
   "proof": {
     "type": "Ed25519Signature2020",
     "created": "2024-01-01T00:00:00Z",
-    "verificationMethod": "https://api.aport.dev/.well-known/oap/keys.json#key-2025-01",
+    "verificationMethod": "https://aport.io/.well-known/oap/keys.json#ap_registry_ed25519_2024",
     "proofPurpose": "assertionMethod",
     "jws": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJjcmVkZW50aWFsU3ViamVjdCI6eyJwYXNzcG9ydF9pZCI6IjU1MGU4NDAwLWUyOWItNDFkNC1hNzE2LTQ0NjY1NTQ0MDAwMCIsImtpbmQiOiJ0ZW1wbGF0ZSIsInNwZWNfdmVyc2lvbiI6Im9hcC8xLjAiLCJvd25lcl9pZCI6Im9yZ18xMjM0NTY3OCIsIm93bmVyX3R5cGUiOiJvcmciLCJhc3N1cmFuY2VfbGV2ZWwiOiJMMiIsInN0YXR1cyI6ImFjdGl2ZSIsImNhcGFiaWxpdGllcyI6WyJwYXltZW50cy5yZWZ1bmQiLCJkYXRhLmV4cG9ydCIsInJlcG8ucmVsZWFzZS5wdWJsaXNoIl0sImxpbWl0cyI6eyJwYXltZW50cy5yZWZ1bmQiOnsiY3VycmVuY3lfbGltaXRzIjp7IlVTRCI6eyJtYXhfcGVyX3R4Ijo1MDAwLCJkYWlseV9jYXAiOjUwMDAwfSwiRVVSIjp7Im1heF9wZXJfdHgiOjQ1MDAsImRhaWx5X2NhcCI6NDUwMDB9fSwicmVhc29uX2NvZGVzIjpbImN1c3RvbWVyX3JlcXVlc3QiLCJkZWZlY3RpdmVfcHJvZHVjdCIsImZyYXVkIl0sImlkZW1wb3RlbmN5X3JlcXVpcmVkIjp0cnVlfSwiZGF0YS5leHBvcnQiOnsibWF4X3Jvd3MiOjEwMDAwMCwiYWxsb3dfcGlpIjpmYWxzZSwiYWxsb3dlZF9jb2xsZWN0aW9ucyI6WyJ1c2VycyIsIm9yZGVycyIsInByb2R1Y3RzIl19LCJyZXBvLnJlbGVhc2UucHVibGlzaCI6eyJhbGxvd2VkX2JyYW5jaGVzIjpbIm1haW4iLCJkZXZlbG9wIl0sIm1heF9yZWxlYXNlc19wZXJfZGF5IjoxMCwicmVxdWlyZV9zaWduZWRfYXJ0aWZhY3RzIjp0cnVlfX0sInJlZ2lvbnMiOlsiVVMiLCJDQSIsIkVVIl0sIm1ldGFkYXRhIjp7Im5hbWUiOiJDdXN0b21lciBTdXBwb3J0IEFJIiwiZGVzY3JpcHRpb24iOiJBSSBhZ2VudCBmb3IgY3VzdG9tZXIgc3VwcG9ydCBvcGVyYXRpb25zIiwidmVyc2lvbiI6IjEuMC4wIiwiY29udGFjdCI6InN1cHBvcnRAZXhhbXBsZS5jb20iLCJob21lcGFnZSI6Imh0dHBzOi8vZXhhbXBsZS5jb20vYWkvc3VwcG9ydCJ9LCJjcmVhdGVkX2F0IjoiMjAyNC0wMS0wMVQwMDowMDowMFoiLCJ1cGRhdGVkX2F0IjoiMjAyNC0wMS0xNVQxMDozMDowMFoiLCJ2ZXJzaW9uIjoxfX0sImlzc3VlciI6Imh0dHBzOi8vYXBpLmFwb3J0LmRldiIsImlzc3VhbmNlRGF0ZSI6IjIwMjQtMDEtMDFUMDA6MDA6MDBaIiwiZXhwaXJhdGlvbkRhdGUiOiIyMDI1LTAxLTAxVDAwOjAwOjAwWiJ9.signature"
   }
