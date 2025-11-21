@@ -412,7 +412,7 @@ export function isValidVC(vc: any): boolean {
 export function isValidOAPPassport(passport: any): boolean {
   return (
     passport &&
-    passport.agent_id &&
+    (passport.agent_id || passport.id) &&
     passport.kind &&
     passport.spec_version &&
     passport.owner_id &&
