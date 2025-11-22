@@ -165,6 +165,164 @@
             }
           }
         },
+        "messaging.send": {
+          "type": "object",
+          "properties": {
+            "msgs_per_min": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Maximum messages per minute"
+            },
+            "msgs_per_day": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Maximum messages per day"
+            },
+            "allowed_recipients": {
+              "oneOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Simple list of allowed recipient IDs"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": ["id"],
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "description": "Recipient identifier (username, email, account ID, etc.)"
+                      },
+                      "limits": {
+                        "type": "object",
+                        "properties": {
+                          "currency": {
+                            "type": "string",
+                            "pattern": "^[A-Z]{3}$",
+                            "description": "ISO 4217 currency code"
+                          },
+                          "max_amount": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "description": "Maximum amount per transaction in minor units"
+                          },
+                          "daily_cap": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "description": "Daily spending cap in minor units"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "description": "List of recipients with per-recipient limits"
+                }
+              ]
+            },
+            "approval_required": {
+              "type": "boolean",
+              "description": "Whether messages require manual approval before sending"
+            }
+          }
+        },
+        "payments.payout": {
+          "type": "object",
+          "properties": {
+            "supported_currencies": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$"
+              },
+              "description": "Supported currencies for payouts"
+            },
+            "currency_limits": {
+              "type": "object",
+              "patternProperties": {
+                "^[A-Z]{3}$": {
+                  "type": "object",
+                  "properties": {
+                    "max_per_tx": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "description": "Maximum amount per transaction in minor units"
+                    },
+                    "max_daily_amount": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "description": "Maximum daily total in minor units"
+                    }
+                  }
+                }
+              }
+            },
+            "allowed_destination_types": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Allowed destination account types"
+            },
+            "allowed_recipients": {
+              "oneOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Simple list of allowed recipient IDs"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": ["id"],
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "description": "Recipient identifier"
+                      },
+                      "limits": {
+                        "type": "object",
+                        "properties": {
+                          "currency": {
+                            "type": "string",
+                            "pattern": "^[A-Z]{3}$"
+                          },
+                          "max_amount": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "daily_cap": {
+                            "type": "integer",
+                            "minimum": 0
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            },
+            "approval_required": {
+              "type": "boolean",
+              "description": "Whether payouts require manual approval"
+            },
+            "max_payouts_per_day": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Maximum number of payouts per day"
+            },
+            "compliance_checks_required": {
+              "type": "boolean",
+              "description": "Whether compliance checks are required"
+            }
+          }
+        },
         "repo.release.publish": {
           "type": "object",
           "properties": {
