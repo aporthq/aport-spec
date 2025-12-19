@@ -412,9 +412,9 @@ export function isValidVC(vc: any): boolean {
 export function isValidOAPPassport(passport: any): boolean {
   return (
     passport &&
-    passport.agent_id &&
+    (passport.agent_id || passport.id) &&
     passport.kind &&
-    passport.spec_version &&
+    (passport.spec_version || passport.version) &&
     passport.owner_id &&
     passport.owner_type &&
     passport.assurance_level &&
@@ -423,8 +423,7 @@ export function isValidOAPPassport(passport: any): boolean {
     passport.limits &&
     passport.regions &&
     passport.created_at &&
-    passport.updated_at &&
-    passport.version
+    passport.updated_at
   );
 }
 
