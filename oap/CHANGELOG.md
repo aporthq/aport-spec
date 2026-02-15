@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Capability registry with three initial policy packs:
   - `finance.payment.refund.v1` - Financial transaction controls
   - `data.export.create.v1` - Data export with PII controls
-  - `repo.release.publish.v1` - Repository release controls
+  - `code.release.publish.v1` - Repository release controls
 - Assurance level system (L0-L4) with verification methods
 - Security model with Ed25519 signatures and key resolution
 - Verifiable Credential interoperability mapping
