@@ -249,6 +249,134 @@ Keys are resolved using the following format:
 - Changes require new version (e.g., `finance.payment.refund.v2`)
 - Old versions remain valid and supported
 
+### Policy Pack Schema
+
+Policy packs define the evaluation logic for specific capabilities. Each policy pack MUST include the following fields:
+
+#### Required Fields
+
+- `id` (string): Unique policy pack identifier in the format `{domain}.{capability}.v{version}` (e.g., `finance.payment.refund.v1`)
+- `name` (string): Human-readable policy name
+- `description` (string): Detailed description of the policy's purpose and enforcement rules
+- `version` (string): Semantic version (e.g., `1.0.0`)
+- `status` (string): One of `active`, `deprecated`, `beta`
+- `requires_capabilities` (array of strings): List of capability IDs required for this policy
+- `min_assurance` (string): Minimum assurance level required (e.g., `L1`, `L2`, `L3`)
+
+#### Optional Fields
+
+- `evaluation_rules_version` (string): Version of the evaluation rules format (e.g., `1.0`). Defaults to `1.0` if not specified.
+- `evaluation_rules` (array): Array of evaluation rule objects that define the policy logic. Each rule object MUST include:
+  - `name` (string): Unique identifier for this rule within the policy
+  - `type` (string): Rule type - either `expression` or `custom_validator`
+  - `deny_code` (string): OAP error code to return if rule fails (e.g., `oap.limit_exceeded`)
+  - `description` (string): Human-readable description of what this rule checks
+  - For `expression` type:
+    - `condition` (string): JavaScript expression that evaluates to boolean. Has access to `passport`, `context`, and `limits` scope objects. Uses safe expression evaluator with restricted grammar.
+  - For `custom_validator` type:
+    - `validator` (string): Name of the validator function from the custom validators registry
+  - Optional:
+    - `message` (string): Custom error message to return if rule fails
+
+- `limits_required` (array of strings): List of limit keys that must be present in passport limits
+- `required_fields` (array of strings): List of required context fields
+- `optional_fields` (array of strings): List of optional context fields
+- `enforcement` (object): Enforcement configuration flags
+- `required_context` (object): JSON Schema for validating context data
+- `cache` (object): Caching configuration with `default_ttl_seconds` and `suspend_invalidate_seconds`
+- `mcp` (object): MCP-specific configuration flags
+- `advice` (array of strings): Best practice recommendations for policy usage
+- `deprecation` (object or null): Deprecation information if status is `deprecated`
+- `created_at` (string): ISO 8601 timestamp of policy creation
+- `updated_at` (string): ISO 8601 timestamp of last policy update
+
+#### Evaluation Rules
+
+Evaluation rules provide declarative policy logic without requiring manual code. Rules are evaluated in order, and the first failing rule causes policy denial.
+
+**Expression Rules** use safe JavaScript expressions:
+```json
+{
+  "name": "amount_within_limit",
+  "type": "expression",
+  "condition": "context.amount <= limits.payments.charge.max_per_tx",
+  "deny_code": "oap.limit_exceeded",
+  "description": "Transaction amount must not exceed limit"
+}
+```
+
+**Custom Validator Rules** reference pre-defined validator functions:
+```json
+{
+  "name": "blocked_patterns",
+  "type": "custom_validator",
+  "validator": "validateBlockedPatterns",
+  "deny_code": "oap.blocked_pattern",
+  "description": "Command must not contain blocked patterns"
+}
+```
+
+Expression rules have access to:
+- `passport` - The full passport object (agent_id, status, capabilities, limits, etc.)
+- `context` - The action context provided in the verification request
+- `limits` - Shorthand for `passport.limits`
+- `helpers` - Safe helper methods (array/string operations, comparisons)
+
+Expressions MUST NOT contain:
+- `eval()`, `Function()`, or other code execution primitives
+- `__proto__`, `prototype`, `constructor` (prototype pollution)
+- Expressions longer than 1000 characters
+
+Custom validators MUST be:
+- Pure functions (no I/O, no side effects)
+- Deterministic (same inputs always produce same outputs)
+- Registered in the validator registry before evaluation
+
+#### Example Policy Pack
+
+```json
+{
+  "id": "system.command.execute.v1",
+  "name": "System Command Execution Policy",
+  "description": "Pre-action governance for shell command execution",
+  "version": "1.0.0",
+  "status": "active",
+  "requires_capabilities": ["system.command.execute"],
+  "min_assurance": "L2",
+  "evaluation_rules_version": "1.0",
+  "evaluation_rules": [
+    {
+      "name": "command_allowlist",
+      "type": "expression",
+      "condition": "limits.allowed_commands.includes(context.command)",
+      "deny_code": "oap.command_not_allowed",
+      "description": "Command must be in allowed list"
+    },
+    {
+      "name": "blocked_patterns",
+      "type": "custom_validator",
+      "validator": "validateBlockedPatterns",
+      "deny_code": "oap.blocked_pattern",
+      "description": "Command must not contain blocked patterns"
+    }
+  ],
+  "required_context": {
+    "type": "object",
+    "required": ["command"],
+    "properties": {
+      "command": {
+        "type": "string",
+        "description": "Command to execute"
+      }
+    }
+  },
+  "cache": {
+    "default_ttl_seconds": 60,
+    "suspend_invalidate_seconds": 30
+  }
+}
+```
+
 ## Security
 
 ### Key Management
