@@ -182,11 +182,11 @@ The [canonical SHIELD v0 spec](https://nova-hunting.github.io/shield.md/) define
 - **[OpenClaw #12385](https://github.com/openclaw/openclaw/issues/12385)** – Adds an optional SHIELD policy layer that runs **before** sensitive events (skill install/execute, tool call, MCP, network, secrets). Our adapter produces the OAP policy pack and limits fragment that a guardrail uses to enforce that layer; the “before_tool_call” (and other gates) call the same OAP verifier. So: **this repo = SHIELD → OAP import; OpenClaw = where that OAP policy is enforced at runtime** (e.g. before_tool_call). **To point the thread here:** post the drafted reply in [ISSUE_REPLY_DRAFT.md](ISSUE_REPLY_DRAFT.md) as a comment on the issue.
 - **[aporthq/aport-spec discussion #19](https://github.com/aporthq/aport-spec/discussions/19)** – Proposes SHIELD threat intelligence import into OAP policy packs, CLI `shield-to-oap`, and multi-source threat intel. This adapter is the reference implementation of that import path; field mapping and `limits.{capability}.shield` shape align with the discussion. **Next steps:** post the summary in [DISCUSSION_SUMMARY.md](DISCUSSION_SUMMARY.md) to the discussion, gather feedback, and link the public discussion from this README once it's live.
 
-APort **supports** policy-in-body verify and the full OAP stack today; the “future” piece is only optional **packaging** of the adapter as `npx @aporthq/agent-guardrails shield import shield.md` for distribution.
+APort **supports** policy-in-body verify and the full OAP stack today; the “future” piece is only optional **packaging** of the adapter as `npx @aporthq/aport-agent-guardrails shield import shield.md` for distribution.
 
 ## Reference adapter
 
-**CLI status:** The packaged CLI (`npx @aporthq/agent-guardrails shield import shield.md`) is **not yet released - CLI implementation in progress.** Use the in-repo script below until it ships.
+**CLI status:** The packaged CLI (`npx @aporthq/aport-agent-guardrails shield import shield.md`) is **not yet released - CLI implementation in progress.** Use the in-repo script below until it ships.
 
 The reference implementation lives in **`adapters/`**:
 
@@ -200,7 +200,7 @@ See [test/README.md](test/README.md) for run instructions and test coverage.
 ## Workstreams
 
 1. **Spec (this doc):** Finalize mapping, scope→capability table, and `limits.{capability}.shield` shape; document in [aport-spec discussion #19](https://github.com/aporthq/aport-spec/discussions/19).
-2. **Importer:** [adapters/index.js](adapters/index.js) is the reference implementation (run as CLI: `node adapters/index.js [shield.md]`). Optional packaging as `npx @aporthq/agent-guardrails shield import shield.md` for distribution. It parses `shield.md` (threat blocks between ---), maps to `limits.{capability}.shield.threats[]` and an OAP policy pack (e.g. tool.call → system.command.execute).
+2. **Importer:** [adapters/index.js](adapters/index.js) is the reference implementation (run as CLI: `node adapters/index.js [shield.md]`). Optional packaging as `npx @aporthq/aport-agent-guardrails shield import shield.md` for distribution. It parses `shield.md` (threat blocks between ---), maps to `limits.{capability}.shield.threats[]` and an OAP policy pack (e.g. tool.call → system.command.execute).
 3. **Demo and docs:** Example `shield.md`, resulting limits fragment, policy pack snippet, guardrail log excerpt; **&lt;2 min demo GIF** (malicious tool blocked, e.g. Cisco scenario).
 
 ## Roadmap
