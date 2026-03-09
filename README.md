@@ -39,6 +39,7 @@ OAP provides the **runtime trust layer** that makes agentic commerce safe and sc
 - **[Passport Schema](./oap/passport-schema.json)** — Agent identity and capabilities
 - **[Decision Schema](./oap/decision-schema.json)** — Authorization decisions
 - **[Security Model](./oap/security.md)** — Cryptographic verification
+- **[Service Discovery](./well-known.md)** — `.well-known/oap/` endpoint spec (IANA registration pending)
 
 ### 🎯 Policy Framework
 - **[Capability Registry](./oap/capability-registry.md)** — Standardized capabilities and limits
