@@ -145,6 +145,51 @@ Policy packs define the complete policy logic for one or more capabilities. They
 - `oap.unsigned_artifact` - Artifact signature required
 - `oap.limit_exceeded` - Daily release limit exceeded
 
+### deliverable.task.complete.v1
+
+**Purpose**: Pre-action governance for an agent marking a task complete. Enforces required deliverable evidence — summary, acceptance criteria attestations, test status, reviewer identity — before done is authorized.
+
+**Required Capability**: `deliverable.task.complete`
+
+**Minimum Assurance**: L0
+
+**Context Fields**:
+- `task_id` (string): Unique identifier for the task
+- `output_type` (string): "code" | "document" | "analysis" | "plan" | "data" | "other"
+- `criteria_attestations` (array): One attestation per passport acceptance criterion, each with `criterion_id`, `met`, `evidence`
+- `summary` (string, optional): Required if `require_summary` is true
+- `tests_passing` (boolean, optional): Required if `require_tests_passing` is true
+- `reviewer_agent_id` (string, optional): Required if `require_different_reviewer` is true
+- `author_agent_id` (string, optional): Required when `require_different_reviewer` is true
+- `output_content` (string, optional): Scanned for blocked patterns if `scan_output` is true
+
+**Limits Structure**:
+```json
+{
+  "deliverable.task.complete": {
+    "require_summary": true,
+    "min_summary_words": 20,
+    "require_tests_passing": false,
+    "require_different_reviewer": false,
+    "scan_output": false,
+    "blocked_patterns": ["TODO", "FIXME", "console.log"],
+    "acceptance_criteria": [
+      { "id": "output_produced", "description": "A concrete output artifact must be produced" },
+      { "id": "no_placeholders", "description": "Output must not contain TODO, FIXME, or placeholder text" }
+    ]
+  }
+}
+```
+
+**Deny Codes**:
+- `oap.criteria_not_met` - An attestation has met: false
+- `oap.evidence_missing` - An attestation has empty evidence
+- `oap.criteria_incomplete` - Missing attestation for a passport criterion
+- `oap.summary_insufficient` - Summary absent or below min_summary_words
+- `oap.tests_not_passing` - tests_passing required but false or missing
+- `oap.self_review_not_allowed` - Same agent for reviewer and author, or either missing
+- `oap.blocked_pattern_detected` - Output contains a blocked pattern
+
 ## Custom Capabilities
 
 ### Definition Process

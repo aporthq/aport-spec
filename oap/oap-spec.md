@@ -232,6 +232,13 @@ Keys are resolved using the following format:
 | `oap.passport_suspended` | Passport is suspended or revoked |
 | `oap.idempotency_conflict` | Idempotency key conflict |
 | `oap.policy_error` | Policy evaluation error |
+| `oap.criteria_not_met` | An attestation has `met: false`; fix criterion and re-attest |
+| `oap.evidence_missing` | An attestation has empty evidence; add concrete evidence string |
+| `oap.criteria_incomplete` | Missing attestation for a passport criterion; submit attestation for every criterion_id |
+| `oap.summary_insufficient` | Summary absent or below min_summary_words; write longer summary |
+| `oap.tests_not_passing` | tests_passing required but false or missing; fix tests and resubmit |
+| `oap.self_review_not_allowed` | reviewer_agent_id === author_agent_id or either missing; get different reviewer |
+| `oap.blocked_pattern_detected` | output_content contains blocked pattern; remove flagged pattern |
 
 ## Versioning
 
