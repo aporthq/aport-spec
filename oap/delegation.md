@@ -96,10 +96,11 @@ Violation of this rule MUST cause the enforcement adapter to reject the DT with 
 
 | Field | Type | Description |
 |-------|------|-------------|
+| `not_before` | ISO 8601 | If present, DT is not valid before this time; enforcement adapters MUST reject if `now() < not_before - CLOCK_SKEW_TOLERANCE` with error code `OAP-D-011: DELEGATION_NOT_YET_VALID` |
 | `regions` | array of string | If present, restricts delegate to a subset of delegator's authorized regions |
 | `policy_packs` | array of string | If present, restricts which OAP policy packs the delegate may use |
 | `revocation_endpoint` | string (URI) | URL at which this DT's revocation status may be queried |
-| `metadata` | object | Arbitrary key-value annotations; not included in signed payload |
+| `metadata` | object | Arbitrary key-value annotations; **NOT included in signed payload**; MUST NOT affect authorization decisions; advisory only |
 
 ### 2.3 Example Delegation Token
 
@@ -169,42 +170,86 @@ delegator_signature = base64url(Ed25519.sign(private_key, payload))
 
 ### 3.2 Verification Algorithm
 
-An enforcement adapter receiving a DT (or chain of DTs) MUST execute the following:
+An enforcement adapter receiving a DT (or chain of DTs) MUST execute the following. Implementations MUST allow a **clock skew tolerance of ±30 seconds** when evaluating `expires_at` (i.e., ASSERT `now() < expires_at + 30s`); this tolerance is a MUST to support distributed multi-agent deployments.
 
 ```
+CONSTANT CLOCK_SKEW_TOLERANCE = 30  // seconds; implementations MAY use a stricter value
+
 function verifyDelegationChain(chain: DT[], action: ToolCall, agent_passport: Passport):
   1. ASSERT chain is ordered root-to-leaf (parent_delegation_id links form a valid chain)
   2. ASSERT chain[0].parent_delegation_id == null
-  3. FOR each DT in chain:
+  3. ASSERT chain[0].chain_root_passport_id == chain[0].delegator_passport_id
+                                                  // root delegator IS the root principal
+  4. FOR each DT at index i in chain:
        a. ASSERT DT.spec_version == "oap/1.0"
-       b. ASSERT now() < DT.expires_at            → else OAP-D-004: DELEGATION_EXPIRED
-       c. ASSERT DT.depth_remaining >= 0
+       b. ASSERT now() < DT.expires_at + CLOCK_SKEW_TOLERANCE
+                                                  → else OAP-D-004: DELEGATION_EXPIRED
+       c. ASSERT 0 <= DT.depth_remaining <= DT.depth_cap
+                                                  → else OAP-D-007: DEPTH_INCONSISTENT
        d. RESOLVE DT.delegator_key_id → public_key
        e. ASSERT Ed25519.verify(public_key, payload(DT), DT.delegator_signature)
                                                   → else OAP-D-005: INVALID_SIGNATURE
-       f. IF index > 0:
-            ASSERT DT.parent_delegation_id == chain[index-1].delegation_id
+       f. IF i > 0:
+            ASSERT DT.parent_delegation_id == chain[i-1].delegation_id
                                                   → else OAP-D-006: BROKEN_CHAIN
-            ASSERT DT.depth_remaining == chain[index-1].depth_remaining - 1
+            ASSERT DT.depth_cap == chain[0].depth_cap
+                                                  // depth_cap is immutable: propagated from root
+            ASSERT DT.depth_remaining == chain[i-1].depth_remaining - 1
                                                   → else OAP-D-007: DEPTH_INCONSISTENT
-            ASSERT DT.granted_capabilities ⊆ chain[index-1].granted_capabilities
+            ASSERT DT.chain_root_passport_id == chain[0].chain_root_passport_id
+                                                  → else OAP-D-006: BROKEN_CHAIN
+            ASSERT DT.granted_capabilities ⊆ chain[i-1].granted_capabilities
                                                   → else OAP-D-001: SCOPE_EXCEEDS_DELEGATOR
-            ASSERT DT.granted_limits ≤ chain[index-1].granted_limits (per capability)
+            ASSERT limitsWithinParent(DT.granted_limits, chain[i-1].granted_limits)
                                                   → else OAP-D-002: LIMITS_EXCEED_DELEGATOR
-  4. ASSERT action.capability ∈ chain[last].granted_capabilities
+  5. ASSERT action.capability ∈ chain[last].granted_capabilities
                                                   → else OAP-D-008: ACTION_NOT_IN_SCOPE
-  5. IF revocation_endpoint present:
-       ASSERT DT.status != REVOKED (live check or cached < 60s)
+  6. FOR each DT in chain WHERE DT.revocation_endpoint is present:
+       ASSERT fetchRevocationStatus(DT, cache_ttl=60s) != "revoked"
                                                   → else OAP-D-009: DELEGATION_REVOKED
-  6. RETURN ALLOW
+       // Note: cascade revocation is enforced here — checking ALL tokens in chain,
+       // not just the leaf. Revoking a parent revokes the sub-chain via this check.
+  7. RETURN ALLOW
 ```
 
-### 3.3 Limit Comparison
+**Note on cascade revocation:** Step 6 checks all tokens in the chain for revocation, not just the leaf. This ensures that revoking a parent DT (by marking it revoked at its `revocation_endpoint`) automatically blocks all sub-chain actions, even though child signatures remain cryptographically valid. This is a policy-layer mechanism, not a cryptographic one.
 
-When asserting `DT.granted_limits ≤ parent.granted_limits`, "less than or equal" means:
-- Numeric values: `dt_value ≤ parent_value`
-- Arrays (e.g., `reason_codes`): `dt_array ⊆ parent_array`
-- Booleans: MUST NOT change `true` → `false` for security-critical flags (e.g., `idempotency_required`)
+**Note on metadata:** `metadata` fields are unsigned and MUST NOT affect authorization decisions. Enforcement adapters MUST ignore metadata when evaluating ALLOW/DENY.
+
+### 3.3 Limit Comparison — `limitsWithinParent(child, parent)`
+
+The `limitsWithinParent` function MUST implement the following recursive deep-comparison algorithm:
+
+```
+function limitsWithinParent(child_limits: object, parent_limits: object) -> boolean:
+  FOR each capability_id in keys(child_limits):
+    IF capability_id NOT IN parent_limits:
+      RETURN false  // child claims a limit key the parent doesn't have → reject
+    child_cap = child_limits[capability_id]
+    parent_cap = parent_limits[capability_id]
+    IF NOT capabilityLimitsLE(child_cap, parent_cap):
+      RETURN false
+  RETURN true
+
+function capabilityLimitsLE(child: object, parent: object) -> boolean:
+  FOR each field in keys(child):
+    child_val = child[field]
+    parent_val = parent[field]  // if missing in parent, treat as unbounded
+    SWITCH typeof(child_val):
+      CASE number:
+        IF child_val > parent_val: RETURN false
+      CASE array:                   // e.g., reason_codes
+        IF NOT (child_val ⊆ parent_val): RETURN false
+      CASE boolean:
+        // Security-hardening flags: MUST NOT be relaxed (true → false is prohibited)
+        // Example: idempotency_required = true in parent MUST remain true in child
+        IF parent_val == true AND child_val == false: RETURN false
+      CASE object:
+        IF NOT capabilityLimitsLE(child_val, parent_val): RETURN false  // recurse
+  RETURN true
+```
+
+When `parent_val` is absent for a given field, the child's value is unconstrained by that field; no rejection occurs. Implementations MAY add additional domain-specific comparison rules in extension fields prefixed with `x-`.
 
 ---
 
@@ -217,7 +262,9 @@ An agent holding a valid DT MAY issue a new DT (a "child DT") to a sub-agent IF:
 1. `depth_remaining > 0`
 2. The child DT's `granted_capabilities` are a strict subset of the parent DT's `granted_capabilities`
 3. The child DT's `expires_at` ≤ the parent DT's `expires_at`
-4. The child DT's `depth_remaining` = parent DT's `depth_remaining - 1`
+4. The child DT's `depth_remaining` **MUST equal** `parent_dt.depth_remaining - 1` (constraint, not assignment)
+5. The child DT's `depth_cap` **MUST equal** `parent_dt.depth_cap` (`depth_cap` is read-only once set by root)
+6. The child DT's `chain_root_passport_id` **MUST equal** `parent_dt.chain_root_passport_id`
 
 ### 4.2 Prohibited Re-delegation
 
@@ -295,16 +342,17 @@ Enforcement adapters MAY cache revocation responses for up to 60 seconds.
 
 | Code | Name | Description |
 |------|------|-------------|
-| `OAP-D-001` | `SCOPE_EXCEEDS_DELEGATOR` | DT grants capabilities not held by delegator |
-| `OAP-D-002` | `LIMITS_EXCEED_DELEGATOR` | DT grants higher limits than delegator holds |
+| `OAP-D-001` | `SCOPE_EXCEEDS_DELEGATOR` | DT grants capabilities not held by delegator; the set `granted_capabilities ⊄ delegator.effective_capabilities` |
+| `OAP-D-002` | `LIMITS_EXCEED_DELEGATOR` | DT grants limits that are less restrictive than the delegator's own limits (numeric value is higher, array set is larger, or a security-hardening boolean is relaxed) |
 | `OAP-D-003` | `DEPTH_EXHAUSTED` | Re-delegation attempted with `depth_remaining = 0` |
-| `OAP-D-004` | `DELEGATION_EXPIRED` | DT `expires_at` is in the past |
+| `OAP-D-004` | `DELEGATION_EXPIRED` | DT `expires_at` is in the past (accounting for clock skew tolerance) |
 | `OAP-D-005` | `INVALID_SIGNATURE` | Ed25519 signature verification failed |
-| `OAP-D-006` | `BROKEN_CHAIN` | `parent_delegation_id` does not match expected parent |
-| `OAP-D-007` | `DEPTH_INCONSISTENT` | `depth_remaining` does not equal parent's value minus 1 |
+| `OAP-D-006` | `BROKEN_CHAIN` | `parent_delegation_id` does not match expected parent, or `chain_root_passport_id` is inconsistent across the chain |
+| `OAP-D-007` | `DEPTH_INCONSISTENT` | `depth_remaining` does not equal `parent.depth_remaining - 1`, or `depth_remaining` is outside `[0, depth_cap]` |
 | `OAP-D-008` | `ACTION_NOT_IN_SCOPE` | Action capability not found in final DT's granted scope |
-| `OAP-D-009` | `DELEGATION_REVOKED` | DT has been explicitly revoked |
+| `OAP-D-009` | `DELEGATION_REVOKED` | DT has been explicitly revoked at its `revocation_endpoint` |
 | `OAP-D-010` | `EXPIRY_EXCEEDS_PARENT` | Child DT `expires_at` is later than parent DT `expires_at` |
+| `OAP-D-011` | `DELEGATION_NOT_YET_VALID` | Current time is before DT's `not_before` timestamp (accounting for clock skew tolerance) |
 
 ---
 
