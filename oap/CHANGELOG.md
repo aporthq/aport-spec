@@ -20,6 +20,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Security considerations: short-lived tokens, minimum scope principle, key compromise handling
   - Conformance requirements (7 MUST requirements)
   - Informed by: aeoess Agent Passport System delegation chains (aport-spec issue #21)
+- StaffEngineer Pass 1 fixes: depth_cap validation, formal `limitsWithinParent()` algorithm, clock skew tolerance (CLOCK_SKEW_TOLERANCE = 30s)
+- StaffEngineer Pass 2 polish: `not_before` assertion in verification algorithm, null/empty edge case handling in `limitsWithinParent()`
 
 ## [1.0.0] - 2025-01-16
 

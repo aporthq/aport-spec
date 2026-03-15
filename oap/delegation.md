@@ -184,6 +184,9 @@ function verifyDelegationChain(chain: DT[], action: ToolCall, agent_passport: Pa
        a. ASSERT DT.spec_version == "oap/1.0"
        b. ASSERT now() < DT.expires_at + CLOCK_SKEW_TOLERANCE
                                                   → else OAP-D-004: DELEGATION_EXPIRED
+       b2. IF DT.not_before is present:
+             ASSERT now() + CLOCK_SKEW_TOLERANCE >= DT.not_before
+                                                  → else OAP-D-011: DELEGATION_NOT_YET_VALID
        c. ASSERT 0 <= DT.depth_remaining <= DT.depth_cap
                                                   → else OAP-D-007: DEPTH_INCONSISTENT
        d. RESOLVE DT.delegator_key_id → public_key
@@ -222,6 +225,12 @@ The `limitsWithinParent` function MUST implement the following recursive deep-co
 
 ```
 function limitsWithinParent(child_limits: object, parent_limits: object) -> boolean:
+  // Edge case: if child has no limits, always valid (empty grant cannot exceed parent)
+  IF child_limits == null OR keys(child_limits).length == 0:
+    RETURN true
+  // Edge case: parent has no limits but child claims some → reject
+  IF parent_limits == null OR keys(parent_limits).length == 0:
+    RETURN false
   FOR each capability_id in keys(child_limits):
     IF capability_id NOT IN parent_limits:
       RETURN false  // child claims a limit key the parent doesn't have → reject
