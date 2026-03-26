@@ -285,8 +285,8 @@ export async function exportDecisionToVC(
       type: "Ed25519Signature2020",
       created: decision.created_at,
       // For decisions, use registry's well-known endpoint
-      // This should resolve to: https://aport.io/.well-known/oap/keys.json
-      verificationMethod: `${registryKey.issuer}/.well-known/oap/keys.json#${registryKey.kid}`,
+      // This should resolve to: https://aport.io/.well-known/oap/jwks.json
+      verificationMethod: `${registryKey.issuer}/.well-known/oap/jwks.json#${registryKey.kid}`,
       proofPurpose: "assertionMethod",
       jws: jws,
     },

@@ -21,7 +21,7 @@ Full conformance requires all basic conformance requirements plus:
 
 1. **Policy evaluation**: Implement policy pack evaluation logic
 2. **JCS canonicalization**: Use RFC 8785 for canonicalization
-3. **Key resolution**: Resolve keys via `/.well-known/oap/keys.json`
+3. **Key resolution**: Resolve keys via `/.well-known/oap/jwks.json`
 4. **Suspend semantics**: Implement 30-second global invalidation
 5. **Performance**: Meet performance requirements (see below)
 
@@ -73,7 +73,7 @@ Implementations MUST:
 Implementations MUST:
 
 1. **Parse signature**: Extract Ed25519 signature from decision
-2. **Resolve key**: Fetch public key using `kid` and `/.well-known/oap/keys.json`
+2. **Resolve key**: Fetch public key using `kid` and `/.well-known/oap/jwks.json`
 3. **Canonicalize**: Apply JCS canonicalization to decision payload
 4. **Verify signature**: Use Ed25519 to verify signature
 5. **Check expiration**: Ensure decision hasn't expired

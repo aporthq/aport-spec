@@ -21,7 +21,7 @@ function exportPassportToVC(passport, registryKey) {
     proof: {
       type: "Ed25519Signature2020",
       created: passport.created_at,
-      verificationMethod: `${registryKey.issuer}/.well-known/oap/keys.json#${registryKey.kid}`,
+      verificationMethod: `${registryKey.issuer}/.well-known/oap/jwks.json#${registryKey.kid}`,
       proofPurpose: "assertionMethod",
       jws: "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9...",
     },
@@ -44,7 +44,7 @@ function exportDecisionToVC(decision, registryKey) {
     proof: {
       type: "Ed25519Signature2020",
       created: decision.created_at,
-      verificationMethod: `${registryKey.issuer}/.well-known/oap/keys.json#${registryKey.kid}`,
+      verificationMethod: `${registryKey.issuer}/.well-known/oap/jwks.json#${registryKey.kid}`,
       proofPurpose: "assertionMethod",
       jws: "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9...",
     },

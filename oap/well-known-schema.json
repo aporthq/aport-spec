@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aport.io/oap/well-known-schema.json",
+  "title": "OAP Service Discovery Response",
+  "description": "JSON Schema for the /.well-known/oap/ discovery endpoint response. Conforms to RFC 8615 and mirrors OAuth 2.0 Authorization Server Metadata (RFC 8414).",
+  "type": "object",
+  "required": [
+    "oap_version",
+    "authorization_endpoint",
+    "passport_endpoint",
+    "policy_endpoint"
+  ],
+  "properties": {
+    "oap_version": {
+      "type": "string",
+      "description": "OAP specification version implemented.",
+      "pattern": "^\\d+\\.\\d+$",
+      "examples": ["1.0"]
+    },
+    "authorization_endpoint": {
+      "type": "string",
+      "format": "uri-template",
+      "description": "Passport verification endpoint. Accepts GET with an {agent_id} path parameter.",
+      "examples": ["https://api.example.com/api/verify/{agent_id}"]
+    },
+    "passport_endpoint": {
+      "type": "string",
+      "format": "uri-template",
+      "description": "Endpoint for retrieving and managing OAP passports.",
+      "examples": ["https://api.example.com/api/passports/{agent_id}"]
+    },
+    "policy_endpoint": {
+      "type": "string",
+      "format": "uri-template",
+      "description": "Endpoint for retrieving policy packs by name. Accepts {policy_name} in dot-separated format.",
+      "examples": ["https://api.example.com/api/policies/{policy_name}"]
+    },
+    "decision_endpoint": {
+      "type": "string",
+      "format": "uri-template",
+      "description": "Endpoint for retrieving individual authorization decisions by {decision_id}.",
+      "examples": ["https://api.example.com/api/verify/decisions/get/{decision_id}"]
+    },
+    "jwks_uri": {
+      "type": "string",
+      "format": "uri",
+      "description": "JWKS endpoint (RFC 7517) for verifying OAP decision and VC signatures.",
+      "examples": ["https://api.example.com/.well-known/oap/jwks.json"]
+    },
+    "supported_capabilities": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9]*(\\.[a-z][a-z0-9]*)*$"
+      },
+      "description": "Dot-separated capability identifiers this server can enforce. Format: category.subcategory.action.",
+      "examples": [
+        ["finance.payment.refund", "finance.payment.charge", "data.export.create", "messaging.message.send"]
+      ]
+    },
+    "supported_assurance_levels": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["L0", "L1", "L2", "L3", "L4KYC", "L4FIN"]
+      },
+      "description": "Assurance levels the issuer can credential and enforce."
+    },
+    "agent_manifest_endpoint": {
+      "type": "string",
+      "format": "uri",
+      "description": "Public agent registry scoped to this domain."
+    },
+    "spec_uri": {
+      "type": "string",
+      "format": "uri",
+      "description": "Link to the OAP specification document."
+    },
+    "contact": {
+      "type": "string",
+      "description": "Security or operations contact (email or URL)."
+    }
+  },
+  "additionalProperties": false
+}
