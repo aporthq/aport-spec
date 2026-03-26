@@ -144,7 +144,7 @@ export class Ed25519 {
   async resolveKey(kid: string): Promise<string | null> {
     try {
       // For conformance testing, we'll use test keys
-      // In production, this would resolve keys from /.well-known/oap/keys.json
+      // In production, this would resolve keys from /.well-known/oap/jwks.json
 
       if (kid.startsWith("oap:registry:test-key")) {
         const { publicKey } = await this.generateTestKeyPair();

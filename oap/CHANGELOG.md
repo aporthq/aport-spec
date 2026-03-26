@@ -26,7 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Ed25519 signature scheme for decision signing
 - JCS (RFC 8785) canonicalization for deterministic hashing
-- Key resolution via `/.well-known/oap/keys.json`
+- Key resolution via `/.well-known/oap/jwks.json`
 - Suspend semantics with 30-second global invalidation
 - Passport digest verification for decision integrity
 

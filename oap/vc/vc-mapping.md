@@ -60,7 +60,7 @@ An OAP passport can be exported as a Verifiable Credential with the following st
   "proof": {
     "type": "Ed25519Signature2020",
     "created": "2024-01-01T00:00:00Z",
-    "verificationMethod": "https://aport.io/.well-known/oap/keys.json#key-2025-01",
+    "verificationMethod": "https://aport.io/.well-known/oap/jwks.json#key-2025-01",
     "proofPurpose": "assertionMethod",
     "jws": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9..."
   }
@@ -112,7 +112,7 @@ An OAP decision can be exported as a Verifiable Credential receipt:
   "proof": {
     "type": "Ed25519Signature2020",
     "created": "2024-01-15T10:30:00Z",
-    "verificationMethod": "https://aport.io/.well-known/oap/keys.json#key-2025-01",
+    "verificationMethod": "https://aport.io/.well-known/oap/jwks.json#key-2025-01",
     "proofPurpose": "assertionMethod",
     "jws": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9..."
   }
@@ -280,7 +280,7 @@ function exportPassportToVC(passport, registryKey) {
     "proof": {
       "type": "Ed25519Signature2020",
       "created": passport.created_at,
-      "verificationMethod": `${registryKey.issuer}/.well-known/oap/keys.json#${registryKey.kid}`,
+      "verificationMethod": `${registryKey.issuer}/.well-known/oap/jwks.json#${registryKey.kid}`,
       "proofPurpose": "assertionMethod",
       "jws": signCredential(passport, registryKey)
     }
@@ -329,7 +329,7 @@ function exportDecisionToVC(decision, registryKey) {
     "proof": {
       "type": "Ed25519Signature2020",
       "created": decision.created_at,
-      "verificationMethod": `${registryKey.issuer}/.well-known/oap/keys.json#${registryKey.kid}`,
+      "verificationMethod": `${registryKey.issuer}/.well-known/oap/jwks.json#${registryKey.kid}`,
       "proofPurpose": "assertionMethod",
       "jws": signCredential(decision, registryKey)
     }

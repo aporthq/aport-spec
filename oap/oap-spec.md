@@ -207,7 +207,7 @@ All objects MUST be canonicalized using [RFC 8785 JCS](https://tools.ietf.org/ht
 
 - All decisions MUST be signed with Ed25519
 - Signatures are computed over JCS-canonicalized decision payloads
-- Key identifiers (kid) MUST be resolvable via `/.well-known/oap/keys.json`
+- Key identifiers (kid) MUST be resolvable via `/.well-known/oap/jwks.json`
 
 ### Key Resolution
 
@@ -391,7 +391,7 @@ Custom validators MUST be:
 ### Key Management
 
 - Ed25519 keys for all signatures
-- Registry keys published at `https://api.yourdomain/.well-known/oap/keys.json`
+- Registry keys published at `https://api.yourdomain/.well-known/oap/jwks.json`
 - Owner keys MAY be published at their domain
 
 ### Receipt Verification

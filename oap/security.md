@@ -42,7 +42,7 @@ All objects are canonicalized using RFC 8785 JCS before signing:
 Registry keys are used by the OAP registry to sign decisions:
 
 - **Format**: `oap:registry:<keyid>`
-- **Location**: `https://api.yourdomain/.well-known/oap/keys.json`
+- **Location**: `https://api.yourdomain/.well-known/oap/jwks.json`
 - **Rotation**: Regular rotation schedule (e.g., quarterly)
 - **Backup**: Multiple keys for high availability
 
@@ -51,7 +51,7 @@ Registry keys are used by the OAP registry to sign decisions:
 Owner keys are used by passport owners for additional verification:
 
 - **Format**: `oap:owner:<domain>:<keyid>`
-- **Location**: `https://<domain>/.well-known/oap/keys.json`
+- **Location**: `https://<domain>/.well-known/oap/jwks.json`
 - **Optional**: Not required for basic OAP compliance
 - **Use Case**: Additional verification layers
 
@@ -68,8 +68,8 @@ Keys are resolved using the following process:
 #### Key Resolution URLs
 
 ```
-Registry keys: https://api.yourdomain/.well-known/oap/keys.json
-Owner keys:    https://<domain>/.well-known/oap/keys.json
+Registry keys: https://api.yourdomain/.well-known/oap/jwks.json
+Owner keys:    https://<domain>/.well-known/oap/jwks.json
 ```
 
 #### Key Format
