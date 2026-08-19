@@ -107,7 +107,7 @@ Implementations MUST:
 Implementations SHOULD meet these performance targets:
 
 - **Passport verification**: ≤ 100ms (95th percentile)
-- **Policy evaluation**: ≤ 200ms (95th percentile)
+- **Policy evaluation**: ≤ 100ms (95th percentile)
 - **Decision generation**: ≤ 300ms (95th percentile)
 - **Signature verification**: ≤ 50ms (95th percentile)
 
