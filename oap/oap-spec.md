@@ -20,7 +20,6 @@ This document is a working draft of the Open Agent Passport specification v1.0.
 8. [Versioning](#versioning)
 9. [Security](#security)
 10. [Conformance](#conformance)
-11. [Delegation Chains](./delegation.md) — multi-agent delegation specification
 
 ## Introduction
 
