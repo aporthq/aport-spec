@@ -80,10 +80,10 @@ Violation of this rule MUST cause the enforcement adapter to reject the DT with 
 |-------|------|-------------|
 | `delegation_id` | UUID v4 | Unique identifier for this DT |
 | `spec_version` | string | MUST be `"oap/1.0"` |
-| `delegator_passport_id` | string | OAP passport ID of the issuing agent |
-| `delegator_agent_id` | string | Opaque agent ID of the issuing agent |
-| `delegate_passport_id` | string | OAP passport ID of the receiving agent |
-| `delegate_agent_id` | string | Opaque agent ID of the receiving agent |
+| `delegator_passport_id` | string | OAP passport ID of the issuing agent; MUST identify a conforming OAP passport and use the same identifier format as `passport_id` in the active core passport schema |
+| `delegator_agent_id` | string | Execution identity of the issuing agent. For core OAP passports without a separate profile-specific `agent_id`, this MUST equal `delegator_passport_id`. |
+| `delegate_passport_id` | string | OAP passport ID of the receiving agent; MUST identify a conforming OAP passport and use the same identifier format as `passport_id` in the active core passport schema |
+| `delegate_agent_id` | string | Execution identity of the receiving agent. For core OAP passports without a separate profile-specific `agent_id`, this MUST equal `delegate_passport_id`. |
 | `granted_capabilities` | array of CapabilityGrant | Capabilities granted; each is a subset of delegator's active capabilities |
 | `granted_limits` | object | Per-capability limits; MUST be ≤ delegator's own limits for each capability |
 | `purpose` | string (max 256 chars) | Human-readable description of the delegation's intended use |
@@ -112,10 +112,10 @@ Violation of this rule MUST cause the enforcement adapter to reject the DT with 
 {
   "delegation_id": "7f3c8a1b-1e2d-4b5a-9c0e-123456789abc",
   "spec_version": "oap/1.0",
-  "delegator_passport_id": "ap_550e8400e29b41d4a716446655440000",
-  "delegator_agent_id": "agt_orchestrator_001",
-  "delegate_passport_id": "ap_6ba7b8109dad11d180b400c04fd430c8",
-  "delegate_agent_id": "agt_worker_finance_01",
+  "delegator_passport_id": "550e8400-e29b-41d4-a716-446655440000",
+  "delegator_agent_id": "550e8400-e29b-41d4-a716-446655440000",
+  "delegate_passport_id": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+  "delegate_agent_id": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
   "granted_capabilities": [
     {
       "id": "finance.payment.refund",
@@ -143,7 +143,7 @@ Violation of this rule MUST cause the enforcement adapter to reject the DT with 
   "created_at": "2026-03-15T03:00:00Z",
   "expires_at": "2026-03-15T05:00:00Z",
   "parent_delegation_id": null,
-  "chain_root_passport_id": "ap_550e8400e29b41d4a716446655440000",
+  "chain_root_passport_id": "550e8400-e29b-41d4-a716-446655440000",
   "delegator_signature": "base64url_encoded_ed25519_signature_here",
   "delegator_key_id": "oap:owner:api.example.com:key-2026-01",
   "revocation_endpoint": "https://api.aport.io/v1/delegations/7f3c8a1b-1e2d-4b5a-9c0e-123456789abc/status"
@@ -179,6 +179,9 @@ An enforcement adapter receiving a DT (or chain of DTs) MUST execute the followi
 ```
 CONSTANT CLOCK_SKEW_TOLERANCE = 30  // seconds
 
+function passportAgentIdentity(passport: Passport):
+  RETURN passport.agent_id IF present, ELSE passport.passport_id
+
 function verifyDelegationChain(chain: DT[], action: ToolCall, agent_passport: Passport):
   1. ASSERT chain.length > 0
                                                   → else OAP-D-019: EMPTY_CHAIN
@@ -189,7 +192,7 @@ function verifyDelegationChain(chain: DT[], action: ToolCall, agent_passport: Pa
   5. RESOLVE chain[0].delegator_passport_id → root_passport
        ASSERT root_passport is active
                                                   → else OAP-D-017: PASSPORT_INACTIVE
-       ASSERT chain[0].delegator_agent_id == root_passport.agent_id
+       ASSERT chain[0].delegator_agent_id == passportAgentIdentity(root_passport)
                                                   → else OAP-D-013: DELEGATOR_MISMATCH
        ASSERT chain[0].granted_capabilities ⊆ root_passport.capabilities
                                                   → else OAP-D-001: SCOPE_EXCEEDS_DELEGATOR
@@ -256,10 +259,13 @@ function verifyDelegationChain(chain: DT[], action: ToolCall, agent_passport: Pa
   7. ASSERT agent_passport is active
                                                   → else OAP-D-017: PASSPORT_INACTIVE
   8. ASSERT chain[last].delegate_passport_id == agent_passport.passport_id
-     ASSERT chain[last].delegate_agent_id == agent_passport.agent_id
+     ASSERT chain[last].delegate_agent_id == passportAgentIdentity(agent_passport)
                                                   → else OAP-D-014: DELEGATE_MISMATCH
-  9. ASSERT action.capability ∈ agent_passport.capabilities
-     ASSERT action.capability ∈ effective_capabilities
+     effective_capabilities = intersection(effective_capabilities, agent_passport.capabilities)
+     effective_limits = intersectLimits(effective_limits, agent_passport.limits, effective_capabilities)
+     effective_regions = intersectRestrictions(effective_regions, agent_passport.regions)
+     effective_policy_packs = intersectRestrictions(effective_policy_packs, agent_passport.policy_packs)
+  9. ASSERT action.capability ∈ effective_capabilities
                                                   → else OAP-D-008: ACTION_NOT_IN_SCOPE
   10. ASSERT limitsPermitAction(action, effective_limits)
                                                   → else OAP-D-018: ACTION_EXCEEDS_LIMITS
@@ -269,7 +275,7 @@ function verifyDelegationChain(chain: DT[], action: ToolCall, agent_passport: Pa
   12. FOR each DT in chain WHERE DT.revocation_endpoint is present:
        ASSERT isTrustedRevocationEndpoint(DT.revocation_endpoint, DT.delegator_passport_id)
                                                   → else OAP-D-015: UNSAFE_REVOCATION_ENDPOINT
-       ASSERT fetchRevocationStatus(DT, cache_ttl=60s) != "revoked"
+       ASSERT fetchRevocationStatus(DT, cache_ttl=60s, redirects="manual") != "revoked"
                                                   → else OAP-D-009: DELEGATION_REVOKED
        // Note: cascade revocation is enforced here — checking ALL tokens in chain,
        // not just the leaf. Revoking a parent revokes the sub-chain via this check.
@@ -277,6 +283,8 @@ function verifyDelegationChain(chain: DT[], action: ToolCall, agent_passport: Pa
 ```
 
 `isTrustedRevocationEndpoint` MUST reject non-HTTPS URLs, loopback/private/link-local hosts, cloud-metadata hosts, and any endpoint whose origin is not either the delegator's passport-owned origin or a trusted OAP registry origin.
+
+`fetchRevocationStatus` MUST NOT follow redirects automatically. If an implementation supports redirects, it MUST validate every `Location` target with `isTrustedRevocationEndpoint` before following the hop, MUST re-check the resolved address for loopback/private/link-local/cloud-metadata targets, and MUST enforce a small hop limit. A redirect that cannot be fully validated MUST fail closed with `OAP-D-015: UNSAFE_REVOCATION_ENDPOINT`.
 
 `limitsPermitAction(action, effective_limits)` MUST apply the policy-pack's normal limit checks to the requested action parameters using the inherited effective limits. Capability membership alone is not sufficient for `ALLOW`: numeric caps, allowlists, idempotency requirements, path restrictions, method/domain restrictions, and other bounded limit fields remain enforceable at the leaf action.
 
@@ -294,12 +302,12 @@ function limitsWithinParent(child_limits: object, parent_limits: object, granted
   // effective limits for every granted capability.
   IF child_limits == null OR keys(child_limits).length == 0:
     RETURN true  // callers MUST use inheritLimits() before policy evaluation
-  // Edge case: parent has no limits but child claims some → reject
+  // A missing parent limit is unbounded; a finite child limit is narrower.
   IF parent_limits == null OR keys(parent_limits).length == 0:
-    RETURN false
+    RETURN true
   FOR each capability_id in keys(child_limits):
     IF capability_id NOT IN parent_limits:
-      RETURN false  // child claims a limit key the parent doesn't have → reject
+      CONTINUE  // missing parent limit for this capability is unbounded
     child_cap = child_limits[capability_id]
     parent_cap = parent_limits[capability_id]
     IF NOT capabilityLimitsLE(child_cap, parent_cap):
@@ -310,6 +318,8 @@ function capabilityLimitsLE(child: object, parent: object) -> boolean:
   FOR each field in keys(child):
     child_val = child[field]
     parent_val = parent[field]  // if missing in parent, treat as unbounded
+    IF parent_val is undefined OR parent_val is null:
+      CONTINUE
     SWITCH typeof(child_val):
       CASE number:
         IF child_val > parent_val: RETURN false
@@ -329,6 +339,10 @@ function capabilityLimitsLE(child: object, parent: object) -> boolean:
 When `parent_val` is absent for a given field, the child's value is unconstrained by that field; no rejection occurs. Implementations MAY add additional domain-specific comparison rules in extension fields prefixed with `x-`.
 
 `restrictionsWithinParent(child, parent)` MUST return true when `child` is omitted, when `parent` is omitted or empty (unbounded), or when every value in `child` is present in `parent`. Omitted child `regions` or `policy_packs` inherit the parent's effective values; omission never widens access.
+
+`intersectLimits(a, b, capabilities)` MUST compute the most restrictive limit set for the supplied capabilities. If either side omits a capability or field, that side is unbounded and the other side's value is retained. If both sides define a numeric cap, the lower value wins. If both sides define an allowlist array, the intersection wins. If either side sets a security-hardening boolean to `true`, the result is `true`. Nested objects recurse with the same rules. Extension fields with no portable comparison semantics MUST be resolved by the policy pack; if the policy pack cannot determine the stricter value, verification MUST fail closed.
+
+`intersectRestrictions(a, b)` MUST treat omitted or empty inputs as unbounded and otherwise return the set intersection. The result MAY be omitted only when both inputs are unbounded.
 
 ---
 
@@ -375,8 +389,8 @@ interface PolicyEvalContext {
 
 When `delegation_chain` is present:
 - The **effective capability set** for policy evaluation is the **intersection** of the agent's passport capabilities and the final DT's `granted_capabilities`
-- Limits from the chain are inherited from parent tokens and override passport limits only where the chain value is more restrictive
-- Region and policy-pack restrictions from parent tokens remain in force unless narrowed by a child token
+- Limits from the chain are inherited from parent tokens and then intersected with the acting agent passport's own limits before evaluating the action
+- Region and policy-pack restrictions from parent tokens remain in force unless narrowed by a child token, then are intersected with the acting agent passport's own restrictions
 - The `chain_root_passport_id` SHOULD be logged as the authorizing principal in the audit trail
 
 ---
@@ -443,7 +457,7 @@ Enforcement adapters MAY cache revocation responses for up to 60 seconds.
 | `OAP-D-012` | `RESTRICTION_EXCEEDS_DELEGATOR` | DT widens parent or passport region or policy-pack restrictions |
 | `OAP-D-013` | `DELEGATOR_MISMATCH` | Child DT issuer does not match the preceding DT's delegate identity |
 | `OAP-D-014` | `DELEGATE_MISMATCH` | Leaf DT recipient does not match the acting passport |
-| `OAP-D-015` | `UNSAFE_REVOCATION_ENDPOINT` | DT revocation endpoint is not HTTPS or is not bound to a trusted passport-owned or registry origin |
+| `OAP-D-015` | `UNSAFE_REVOCATION_ENDPOINT` | DT revocation endpoint or redirect target is not HTTPS, is not bound to a trusted passport-owned or registry origin, or resolves to a loopback/private/link-local/cloud-metadata address |
 | `OAP-D-016` | `KEY_NOT_AUTHORIZED` | Delegator key is not active or not registered to the claimed delegator passport |
 | `OAP-D-017` | `PASSPORT_INACTIVE` | Root, intermediate, or acting leaf passport is suspended, revoked, expired, or otherwise inactive |
 | `OAP-D-018` | `ACTION_EXCEEDS_LIMITS` | Requested action parameters exceed the inherited effective limits |
@@ -511,7 +525,7 @@ A system claiming OAP Delegation conformance MUST:
 8. Bind every child DT issuer to the preceding DT's delegate identity
 9. Bind the leaf DT recipient to the acting passport
 10. Inherit parent limits, regions, and policy-pack restrictions unless explicitly narrowed
-11. Reject unsafe revocation endpoints before any network fetch
+11. Reject unsafe revocation endpoints and unvalidated revocation redirects before any network fetch follows them
 12. Resolve every signing key through the claimed delegator passport or a trusted registry binding
 13. Reject inactive root, intermediate, and acting leaf passports
 14. Evaluate requested action parameters against inherited effective limits
