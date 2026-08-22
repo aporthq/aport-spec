@@ -14,13 +14,13 @@ This document is a working draft of the Open Agent Passport specification v1.0.
 2. [Core Objects](#core-objects)
 3. [Assurance Levels](#assurance-levels)
 4. [Decision Objects](#decision-objects)
-5. [Caching & TTL](#caching--ttl)
-6. [Canonicalization & Signing](#canonicalization--signing)
-7. [Errors](#errors)
-8. [Versioning](#versioning)
-9. [Security](#security)
-10. [Conformance](#conformance)
-11. [Delegation Chains](./delegation.md) — multi-agent delegation specification
+5. [Delegation Chains](#delegation-chains)
+6. [Caching & TTL](#caching--ttl)
+7. [Canonicalization & Signing](#canonicalization--signing)
+8. [Errors](#errors)
+9. [Versioning](#versioning)
+10. [Security](#security)
+11. [Conformance](#conformance)
 
 ## Introduction
 
@@ -177,6 +177,10 @@ A decision object represents the result of policy evaluation for a specific acti
   "kid": "oap:registry:key-2025-01"
 }
 ```
+
+## Delegation Chains
+
+OAP delegation chains define how an agent may delegate a narrowed, time-bounded subset of authority to a sub-agent while preserving chain-root attribution. The normative delegation-chain specification is maintained in [Delegation Chains](./delegation.md).
 
 ## Caching & TTL
 
