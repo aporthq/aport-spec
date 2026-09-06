@@ -150,6 +150,8 @@ A decision object represents the result of policy evaluation for a specific acti
 - `signature` (string): Ed25519 signature over decision payload
 - `kid` (string): Key identifier for signature verification
 
+`allow` is the signed policy authorization result. Harness or relying-party rollout modes such as `warn`, `report-only`, and `fail-open-on-api-error` are enforcement dispositions outside the core OAP decision object; they MUST NOT rewrite a policy denial into `allow: true`. See [OAP Decisions vs Harness Enforcement](../../docs/DECISION-VS-ENFORCEMENT.md) for non-normative implementation guidance.
+
 ### Optional Fields
 
 - `decision_token` (string): Compact JWT for sub-TTL caching
