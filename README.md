@@ -40,6 +40,7 @@ OAP provides the **runtime trust layer** that makes agentic commerce safe and sc
 - **[Decision Schema](./oap/decision-schema.json)** — Authorization decisions
 - **[Security Model](./oap/security.md)** — Cryptographic verification
 - **[Service Discovery](./well-known.md)** — `.well-known/oap/` endpoint specification
+- **[Decision vs Enforcement Guidance](../docs/DECISION-VS-ENFORCEMENT.md)** — Non-normative guidance for reconciling signed OAP decisions with harness warn/report-only rollout
 
 ### 🎯 Policy Framework
 - **[Capability Registry](./oap/capability-registry.md)** — Standardized capabilities and limits
