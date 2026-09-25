@@ -143,29 +143,45 @@ Implementations MUST pass all conformance tests:
 
 ### Test Vectors
 
-Test vectors are provided in the `/conformance` directory:
+Test vectors are provided in `spec/conformance` (the `conformance/` directory of aporthq/aport-spec):
 
 - **Passport examples**: Valid and invalid passport samples
 - **Context data**: Policy evaluation context samples
 - **Expected decisions**: Expected decision outputs
 - **Signature tests**: Signature creation and verification tests
 
+Seven packs also ship fixtures under `policies/<pack>/tests/`: `deliverable.task.complete.v1`, `finance.payment.charge.v1`, `finance.payment.refund.v1`, `finance.transaction.execute.v1`, `governance.data.access.v1`, `legal.contract.review.v1`, `media.image.generate.v1`.
+
+### Suite Status (2026-09-24)
+
+The suite is Candidate entry criterion 3 (see [VERSION.md](./VERSION.md)) and does not pass it today, which is one of the reasons the specification is still a Working Draft:
+
+- `spec/conformance/cases/` holds cases for two packs under their pre-rename ids, `payments.refunds.v1` and `data.export.v1`. The packs were renamed on 2025-10-08.
+- `node test-runner.js` (simple mode) passed 5 of 5; it does not check pack ids against the registry.
+- `tsx src/runner.ts` failed 5 of 5 with "Unknown policy pack".
+- 20 of 22 registered packs have no cases in the suite.
+- `decision-schema.json` cannot be satisfied as written (see the Status section of [oap-spec.md](./oap-spec.md)), so any schema check of a decision fails until it is fixed.
+
+Bringing the suite to green means renaming the case directories to the current pack ids, making `test-runner.js` check those ids so the two runners agree, and fixing the decision schema. Criterion 3 asks only that the suite run against the current registry and pass; cases for the remaining 20 packs are a Final criterion. Because the text is a Working Draft, none of this is constrained by a maturity rule.
+
 ### Running Tests
 
 ```bash
 
-# Install dependencies
-npm install
+# Install dependencies (from spec/conformance)
+pnpm install
 
 # Run all tests
-npm test
+pnpm test
 
-# Run specific test suite
-npm test -- --suite finance.payment.refund.v1
+# Run one currently present legacy case id (until the cases are renamed)
+pnpm test --pack payments.refunds.v1
 
-# Run performance tests
-npm test -- --suite performance
+# Simple JavaScript runner
+pnpm run test:simple
 ```
+
+How a passing suite feeds a release (tag, publish, announce, deprecation window) is described under "How the Spec Is Released" in [VERSION.md](./VERSION.md).
 
 ## Security Requirements
 
@@ -210,9 +226,11 @@ Implementations SHOULD:
 
 ## Certification
 
-### Self-Certification
+Certification is not available while OAP 1.0 is a Working Draft. Implementations may run the tests for editor feedback and interoperability development, but they must not claim OAP conformance until the specification reaches Candidate or Final status.
 
-Implementations can self-certify by:
+### Self-Certification (Candidate or Final Only)
+
+Once the text is Candidate or Final, implementations can self-certify by:
 
 1. **Running conformance tests**: Pass all required tests
 2. **Documenting compliance**: Document conformance to requirements
@@ -221,7 +239,7 @@ Implementations can self-certify by:
 
 ### Third-Party Certification
 
-For higher assurance, implementations can seek third-party certification:
+For higher assurance after Candidate or Final status, implementations can seek third-party certification:
 
 1. **Security audit**: Independent security review
 2. **Performance testing**: Independent performance validation
