@@ -30,6 +30,8 @@ Baseline for this entry: commit 443a015 (2025-09-30), the first commit carrying 
 - Maturity stays **Working Draft**. Candidate was evaluated on 2026-09-24 and not entered: criteria 3 (conformance suite against the current registry) and 6 (deprecation policy in force) are not met, and criteria 4 (pack READMEs) and 5 (security review of the text) are only partly met. The Candidate rung permits conformance claims, and criterion 3 is what makes such a claim mean anything, so the status does not move until the suite runs against the current pack ids. No review window is opened.
 - Policy evaluation performance target tightened from 200 ms to 100 ms at the 95th percentile (conformance.md)
 - `limits` in expression rules is now defined as the block for the pack's primary capability, never populated from `context` (oap-spec.md, policies/README.md)
+- VERSION.md clarifies that minor-version validators must keep `oap/1.0` and `oap/1.1` wire schemas version-conditional rather than widening the 1.0 schema.
+- Capability registry source links now point at the public `aporthq/aport-policies` repository so downstream generated registries remain resolvable after publication.
 - Examples throughout use the current identifiers (`finance.payment.refund`, `finance.payment.refund.v1`)
 - VC context URL moved from `github.com/aporthq/aport-spec/oap/vc/...` (404) to the raw GitHub URL; issuer examples changed from `api.aport.dev` to `aport.io`
 

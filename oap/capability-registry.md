@@ -85,7 +85,7 @@ Deny codes listed per pack are the `deny_code` values in that pack's `evaluation
 
 **Deny codes**: `oap.duration_limit_exceeded`, `oap.session_type_not_allowed`, `oap.resource_quota_exceeded`, `oap.concurrent_limit_exceeded`
 
-**Source**: [policies/agent.session.create.v1/policy.json](../../policies/agent.session.create.v1/policy.json), [README](../../policies/agent.session.create.v1/README.md)
+**Source**: [policies/agent.session.create.v1/policy.json](https://github.com/aporthq/aport-policies/blob/main/agent.session.create.v1/policy.json), [README](https://github.com/aporthq/aport-policies/blob/main/agent.session.create.v1/README.md)
 
 ### agent.tool.register.v1
 
@@ -105,7 +105,7 @@ Deny codes listed per pack are the `deny_code` values in that pack's `evaluation
 
 **Deny codes**: `oap.tool_type_not_allowed`, `oap.invalid_tool_name`, `oap.tool_already_exists`, `oap.capability_not_allowed`
 
-**Source**: [policies/agent.tool.register.v1/policy.json](../../policies/agent.tool.register.v1/policy.json), [README](../../policies/agent.tool.register.v1/README.md)
+**Source**: [policies/agent.tool.register.v1/policy.json](https://github.com/aporthq/aport-policies/blob/main/agent.tool.register.v1/policy.json), [README](https://github.com/aporthq/aport-policies/blob/main/agent.tool.register.v1/README.md)
 
 ### code.release.publish.v1
 
@@ -125,7 +125,7 @@ Deny codes listed per pack are the `deny_code` values in that pack's `evaluation
 
 **Deny codes**: `oap.passport_suspended`, `oap.assurance_insufficient`, `oap.format_unsupported`, `oap.file_forbidden`, `oap.unknown_capability`
 
-**Source**: [policies/code.release.publish.v1/policy.json](../../policies/code.release.publish.v1/policy.json), [README](../../policies/code.release.publish.v1/README.md)
+**Source**: [policies/code.release.publish.v1/policy.json](https://github.com/aporthq/aport-policies/blob/main/code.release.publish.v1/policy.json), [README](https://github.com/aporthq/aport-policies/blob/main/code.release.publish.v1/README.md)
 
 ### code.repository.merge.v1
 
@@ -145,7 +145,7 @@ Deny codes listed per pack are the `deny_code` values in that pack's `evaluation
 
 **Deny codes**: `oap.passport_suspended`, `oap.unknown_capability`, `oap.limit_exceeded`
 
-**Source**: [policies/code.repository.merge.v1/policy.json](../../policies/code.repository.merge.v1/policy.json), [README](../../policies/code.repository.merge.v1/README.md)
+**Source**: [policies/code.repository.merge.v1/policy.json](https://github.com/aporthq/aport-policies/blob/main/code.repository.merge.v1/policy.json), [README](https://github.com/aporthq/aport-policies/blob/main/code.repository.merge.v1/README.md)
 
 ### data.export.create.v1
 
@@ -165,7 +165,7 @@ Deny codes listed per pack are the `deny_code` values in that pack's `evaluation
 
 **Deny codes**: `oap.passport_suspended`, `oap.unknown_capability`, `oap.limit_exceeded`, `oap.pii_not_allowed`, `oap.format_unsupported`
 
-**Source**: [policies/data.export.create.v1/policy.json](../../policies/data.export.create.v1/policy.json), [README](../../policies/data.export.create.v1/README.md)
+**Source**: [policies/data.export.create.v1/policy.json](https://github.com/aporthq/aport-policies/blob/main/data.export.create.v1/policy.json), [README](https://github.com/aporthq/aport-policies/blob/main/data.export.create.v1/README.md)
 
 ### data.file.read.v1
 
@@ -185,7 +185,7 @@ Deny codes listed per pack are the `deny_code` values in that pack's `evaluation
 
 **Deny codes**: `oap.path_not_allowed`, `oap.blocked_pattern`, `oap.limit_exceeded`, `oap.extension_not_allowed`
 
-**Source**: [policies/data.file.read.v1/policy.json](../../policies/data.file.read.v1/policy.json)
+**Source**: [policies/data.file.read.v1/policy.json](https://github.com/aporthq/aport-policies/blob/main/data.file.read.v1/policy.json)
 
 ### data.file.write.v1
 
@@ -205,7 +205,7 @@ Deny codes listed per pack are the `deny_code` values in that pack's `evaluation
 
 **Deny codes**: `oap.path_not_allowed`, `oap.path_blocked`, `oap.extension_not_allowed`, `oap.limit_exceeded`, `oap.rate_limit_exceeded`, `oap.directory_not_allowed`
 
-**Source**: [policies/data.file.write.v1/policy.json](../../policies/data.file.write.v1/policy.json)
+**Source**: [policies/data.file.write.v1/policy.json](https://github.com/aporthq/aport-policies/blob/main/data.file.write.v1/policy.json)
 
 ### data.report.ingest.v1
 
@@ -225,7 +225,7 @@ Deny codes listed per pack are the `deny_code` values in that pack's `evaluation
 
 **Deny codes**: `oap.passport_suspended`, `oap.source_unapproved`, `oap.data_stale`, `oap.assurance_insufficient`, `oap.data_size_exceeded`, `oap.ingest_frequency_exceeded`, `oap.data_quality_insufficient`, `oap.validation_checks_missing`, `oap.idempotency_conflict`, `oap.report_type_forbidden`, `oap.source_reputation_insufficient`, `oap.metric_type_forbidden`
 
-**Source**: [policies/data.report.ingest.v1/policy.json](../../policies/data.report.ingest.v1/policy.json), [README](../../policies/data.report.ingest.v1/README.md)
+**Source**: [policies/data.report.ingest.v1/policy.json](https://github.com/aporthq/aport-policies/blob/main/data.report.ingest.v1/policy.json), [README](https://github.com/aporthq/aport-policies/blob/main/data.report.ingest.v1/README.md)
 
 ### deliverable.task.complete.v1
 
@@ -249,7 +249,7 @@ Deny codes listed per pack are the `deny_code` values in that pack's `evaluation
 
 Extra attestations are a separate question, and today they are accepted. Rule `all_passport_criteria_attested` asks only that every passport criterion have some matching attestation; it does not require the reverse. An attestation whose `criterion_id` appears in no passport criterion is not rejected on its own, and it does not satisfy a passport criterion either. It is still held to the rules that apply to every attestation: `validateDeliverableCriteriaEvidence` requires non-empty evidence and `validateDeliverableCriteriaMet` requires `met` to be the boolean `true`, so an unknown id carrying `met: false` or blank evidence denies the whole request. See the pack README under "Where acceptance criteria live".
 
-**Source**: [policies/deliverable.task.complete.v1/policy.json](../../policies/deliverable.task.complete.v1/policy.json), [README](../../policies/deliverable.task.complete.v1/README.md)
+**Source**: [policies/deliverable.task.complete.v1/policy.json](https://github.com/aporthq/aport-policies/blob/main/deliverable.task.complete.v1/policy.json), [README](https://github.com/aporthq/aport-policies/blob/main/deliverable.task.complete.v1/README.md)
 
 ### finance.crypto.trade.v1
 
@@ -269,7 +269,7 @@ Extra attestations are a separate question, and today they are accepted. Rule `a
 
 **Deny codes**: `oap.passport_suspended`, `oap.exchange_forbidden`, `oap.token_forbidden`, `oap.limit_exceeded`, `oap.wallet_limit_exceeded`, `oap.assurance_insufficient`, `oap.daily_volume_exceeded`, `oap.trade_frequency_exceeded`, `oap.idempotency_conflict`, `oap.risk_score_exceeded`, `oap.exchange_offline`, `oap.market_closed`
 
-**Source**: [policies/finance.crypto.trade.v1/policy.json](../../policies/finance.crypto.trade.v1/policy.json), [README](../../policies/finance.crypto.trade.v1/README.md)
+**Source**: [policies/finance.crypto.trade.v1/policy.json](https://github.com/aporthq/aport-policies/blob/main/finance.crypto.trade.v1/policy.json), [README](https://github.com/aporthq/aport-policies/blob/main/finance.crypto.trade.v1/README.md)
 
 ### finance.payment.charge.v1
 
@@ -289,7 +289,7 @@ Extra attestations are a separate question, and today they are accepted. Rule `a
 
 **Deny codes**: `oap.passport_suspended`, `oap.assurance_insufficient`, `oap.currency_unsupported`, `oap.limit_exceeded`, `oap.merchant_forbidden`, `oap.region_blocked`, `oap.category_blocked`, `oap.idempotency_conflict`
 
-**Source**: [policies/finance.payment.charge.v1/policy.json](../../policies/finance.payment.charge.v1/policy.json), [README](../../policies/finance.payment.charge.v1/README.md)
+**Source**: [policies/finance.payment.charge.v1/policy.json](https://github.com/aporthq/aport-policies/blob/main/finance.payment.charge.v1/policy.json), [README](https://github.com/aporthq/aport-policies/blob/main/finance.payment.charge.v1/README.md)
 
 ### finance.payment.payout.v1
 
@@ -309,7 +309,7 @@ Extra attestations are a separate question, and today they are accepted. Rule `a
 
 **Deny codes**: `oap.passport_suspended`, `oap.assurance_insufficient`, `oap.currency_unsupported`, `oap.limit_exceeded`, `oap.destination_type_forbidden`, `oap.compliance_check_required`, `oap.idempotency_conflict`
 
-**Source**: [policies/finance.payment.payout.v1/policy.json](../../policies/finance.payment.payout.v1/policy.json), [README](../../policies/finance.payment.payout.v1/README.md)
+**Source**: [policies/finance.payment.payout.v1/policy.json](https://github.com/aporthq/aport-policies/blob/main/finance.payment.payout.v1/policy.json), [README](https://github.com/aporthq/aport-policies/blob/main/finance.payment.payout.v1/README.md)
 
 ### finance.payment.refund.v1
 
@@ -329,7 +329,7 @@ Extra attestations are a separate question, and today they are accepted. Rule `a
 
 **Deny codes**: `oap.passport_suspended`, `oap.assurance_insufficient`, `oap.currency_unsupported`, `oap.limit_exceeded`, `oap.invalid_reason_code`, `oap.cross_currency_denied`, `oap.idempotency_conflict`, `oap.region_blocked`
 
-**Source**: [policies/finance.payment.refund.v1/policy.json](../../policies/finance.payment.refund.v1/policy.json), [README](../../policies/finance.payment.refund.v1/README.md)
+**Source**: [policies/finance.payment.refund.v1/policy.json](https://github.com/aporthq/aport-policies/blob/main/finance.payment.refund.v1/policy.json), [README](https://github.com/aporthq/aport-policies/blob/main/finance.payment.refund.v1/README.md)
 
 ### finance.transaction.execute.v1
 
@@ -349,7 +349,7 @@ Extra attestations are a separate question, and today they are accepted. Rule `a
 
 **Deny codes**: `oap.passport_suspended`, `oap.action_forbidden`, `oap.asset_class_forbidden`, `oap.limit_exceeded`, `oap.account_type_restricted`, `oap.commingling_of_funds_forbidden`, `oap.counterparty_limit_exceeded`, `oap.idempotency_conflict`
 
-**Source**: [policies/finance.transaction.execute.v1/policy.json](../../policies/finance.transaction.execute.v1/policy.json), [README](../../policies/finance.transaction.execute.v1/README.md)
+**Source**: [policies/finance.transaction.execute.v1/policy.json](https://github.com/aporthq/aport-policies/blob/main/finance.transaction.execute.v1/policy.json), [README](https://github.com/aporthq/aport-policies/blob/main/finance.transaction.execute.v1/README.md)
 
 ### governance.data.access.v1
 
@@ -369,7 +369,7 @@ Extra attestations are a separate question, and today they are accepted. Rule `a
 
 **Deny codes**: `oap.passport_suspended`, `oap.assurance_insufficient`, `oap.classification_forbidden`, `oap.entity_type_forbidden`, `oap.jurisdiction_blocked`, `oap.row_limit_exceeded`, `oap.balance_inquiry_forbidden`, `oap.action_forbidden`, `oap.access_frequency_exceeded`, `oap.data_expired`
 
-**Source**: [policies/governance.data.access.v1/policy.json](../../policies/governance.data.access.v1/policy.json), [README](../../policies/governance.data.access.v1/README.md)
+**Source**: [policies/governance.data.access.v1/policy.json](https://github.com/aporthq/aport-policies/blob/main/governance.data.access.v1/policy.json), [README](https://github.com/aporthq/aport-policies/blob/main/governance.data.access.v1/README.md)
 
 ### legal.contract.review.v1
 
@@ -389,7 +389,7 @@ Extra attestations are a separate question, and today they are accepted. Rule `a
 
 **Deny codes**: `oap.passport_suspended`, `oap.assurance_insufficient`, `oap.document_type_forbidden`, `oap.document_size_exceeded`, `oap.jurisdiction_blocked`, `oap.attorney_review_required`, `oap.privilege_protection_violation`, `oap.daily_limit_exceeded`, `oap.client_tier_forbidden`, `oap.idempotency_conflict`, `oap.currency_unsupported`, `oap.limit_exceeded`, `oap.high_value_review_required`, `oap.client_consent_required`, `oap.conflicts_check_required`, `oap.fee_disclosure_required`, `oap.engagement_letter_required`, `oap.unauthorized_practice_of_law`, `oap.conflict_of_interest`, `oap.data_encryption_required`, `oap.supervisor_approval_required`
 
-**Source**: [policies/legal.contract.review.v1/policy.json](../../policies/legal.contract.review.v1/policy.json), [README](../../policies/legal.contract.review.v1/README.md)
+**Source**: [policies/legal.contract.review.v1/policy.json](https://github.com/aporthq/aport-policies/blob/main/legal.contract.review.v1/policy.json), [README](https://github.com/aporthq/aport-policies/blob/main/legal.contract.review.v1/README.md)
 
 ### media.image.generate.v1
 
@@ -411,7 +411,7 @@ Raw prompt text, image bytes, image URLs, and local file paths are not policy co
 
 **Deny codes**: `oap.invalid_context`, `oap.provider_not_allowed`, `oap.prompt_too_large`, `oap.referenced_image_limit_exceeded`, `oap.output_image_limit_exceeded`, `oap.output_format_not_allowed`
 
-**Source**: [policies/media.image.generate.v1/policy.json](../../policies/media.image.generate.v1/policy.json), [README](../../policies/media.image.generate.v1/README.md)
+**Source**: [policies/media.image.generate.v1/policy.json](https://github.com/aporthq/aport-policies/blob/main/media.image.generate.v1/policy.json), [README](https://github.com/aporthq/aport-policies/blob/main/media.image.generate.v1/README.md)
 
 ### mcp.tool.execute.v1
 
@@ -431,7 +431,7 @@ Raw prompt text, image bytes, image URLs, and local file paths are not policy co
 
 **Deny codes**: `oap.server_not_allowed`, `oap.invalid_server_url`, `oap.tool_not_allowed`, `oap.rate_limit_exceeded`, `oap.timeout_exceeded`, `oap.parameter_size_exceeded`
 
-**Source**: [policies/mcp.tool.execute.v1/policy.json](../../policies/mcp.tool.execute.v1/policy.json), [README](../../policies/mcp.tool.execute.v1/README.md)
+**Source**: [policies/mcp.tool.execute.v1/policy.json](https://github.com/aporthq/aport-policies/blob/main/mcp.tool.execute.v1/policy.json), [README](https://github.com/aporthq/aport-policies/blob/main/mcp.tool.execute.v1/README.md)
 
 ### messaging.message.send.v1
 
@@ -451,7 +451,7 @@ Raw prompt text, image bytes, image URLs, and local file paths are not policy co
 
 **Deny codes**: `oap.passport_suspended`, `oap.unknown_capability`, `oap.rate_limit_exceeded`, `oap.content_too_long`
 
-**Source**: [policies/messaging.message.send.v1/policy.json](../../policies/messaging.message.send.v1/policy.json), [README](../../policies/messaging.message.send.v1/README.md)
+**Source**: [policies/messaging.message.send.v1/policy.json](https://github.com/aporthq/aport-policies/blob/main/messaging.message.send.v1/policy.json), [README](https://github.com/aporthq/aport-policies/blob/main/messaging.message.send.v1/README.md)
 
 ### system.command.execute.v1
 
@@ -471,7 +471,7 @@ Raw prompt text, image bytes, image URLs, and local file paths are not policy co
 
 **Deny codes**: `oap.command_not_allowed`, `oap.blocked_pattern`, `oap.limit_exceeded`, `oap.directory_not_allowed`, `oap.env_var_blocked`
 
-**Source**: [policies/system.command.execute.v1/policy.json](../../policies/system.command.execute.v1/policy.json), [README](../../policies/system.command.execute.v1/README.md)
+**Source**: [policies/system.command.execute.v1/policy.json](https://github.com/aporthq/aport-policies/blob/main/system.command.execute.v1/policy.json), [README](https://github.com/aporthq/aport-policies/blob/main/system.command.execute.v1/README.md)
 
 ### web.browser.v1
 
@@ -491,7 +491,7 @@ Raw prompt text, image bytes, image URLs, and local file paths are not policy co
 
 **Deny codes**: `oap.domain_not_allowed`, `oap.domain_blocked`, `oap.private_ip_blocked`, `oap.action_not_allowed`, `oap.form_submission_blocked`, `oap.rate_limit_exceeded`
 
-**Source**: [policies/web.browser.v1/policy.json](../../policies/web.browser.v1/policy.json)
+**Source**: [policies/web.browser.v1/policy.json](https://github.com/aporthq/aport-policies/blob/main/web.browser.v1/policy.json)
 
 ### web.fetch.v1
 
@@ -511,7 +511,7 @@ Raw prompt text, image bytes, image URLs, and local file paths are not policy co
 
 **Deny codes**: `oap.domain_not_allowed`, `oap.domain_blocked`, `oap.private_ip_blocked`, `oap.method_not_allowed`, `oap.header_blocked`, `oap.rate_limit_exceeded`
 
-**Source**: [policies/web.fetch.v1/policy.json](../../policies/web.fetch.v1/policy.json)
+**Source**: [policies/web.fetch.v1/policy.json](https://github.com/aporthq/aport-policies/blob/main/web.fetch.v1/policy.json)
 
 ## Custom Capabilities
 

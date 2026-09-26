@@ -24,9 +24,10 @@ The specification carries two version identifiers with different jobs.
 
 What a minor bump means for validators. `passport-schema.json` today pins `spec_version` with `"const": "oap/1.0"`, and the hosted implementation defaults new passports to that string. When 1.1.0 ships:
 
-- the schema changes `const` to `"enum": ["oap/1.0", "oap/1.1"]`
-- a validator that implements 1.1 MUST accept objects marked `oap/1.0` and objects marked `oap/1.1`
-- an object marked `oap/1.1` MAY use fields defined in 1.1; an object marked `oap/1.0` MUST NOT rely on them
+- the schema MUST become version-conditional, either by publishing separate schema files per wire version or by using a top-level discriminator such as `oneOf`/`if` branches keyed by `spec_version`
+- the 1.0 branch MUST keep the 1.0 field set and MUST reject 1.1-only fields on objects marked `oap/1.0`
+- the 1.1 branch MUST accept objects marked `oap/1.1` and MAY allow fields defined in 1.1
+- a validator that implements 1.1 MUST accept objects marked `oap/1.0` by validating them against the 1.0 branch, and MUST accept objects marked `oap/1.1` by validating them against the 1.1 branch
 - a validator that only implements 1.0 will reject `oap/1.1` objects by schema, so issuers SHOULD keep emitting `oap/1.0` until their relying parties have upgraded, and MUST NOT mark an object `oap/1.1` unless it uses a 1.1 field
 
 A major bump (`oap/2.0`) is not accepted by any 1.x validator. Implementations MAY support several major versions at once.
