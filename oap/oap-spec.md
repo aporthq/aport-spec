@@ -6,7 +6,50 @@ The Open Agent Passport (OAP) specification defines a standardized format for AI
 
 ## Status
 
-This document is a working draft of the Open Agent Passport specification v1.0.
+**Working Draft** for wire version `oap/1.0`, as of 2026-09-24. Not Candidate, not Final.
+
+Working Draft means the text may still change in ways that break earlier drafts, and no implementation should claim conformance to it. The maturity ladder and the checklists below are defined in [VERSION.md](./VERSION.md). This status covers oap-spec.md, `passport-schema.json`, `decision-schema.json`, `well-known-schema.json`, capability-registry.md, security.md, conformance.md, and [delegation.md](./delegation.md).
+
+Candidate was considered for this revision and not taken. Two of the six entry criteria are not met and two more are only partly met; the checklist below records each one with its evidence, and VERSION.md states what has to happen before the status changes. Declaring Candidate would let an implementation claim conformance under a conformance suite that does not run against the current registry identifiers, which is the specific thing the criterion exists to prevent.
+
+The document revision number is not assigned. Two changes since the 1.0.0 text (the identifier rename of 2025-10-08 and the key path change of 2026-03-26) are incompatible with it, so 1.1.0 is not available under semver; the choice between re-basing 1.0 and cutting 2.0.0 is recorded in VERSION.md under "Open decision".
+
+### Candidate entry checklist
+
+This is the gate into Candidate, evaluated on 2026-09-24. It is not met.
+
+| # | Criterion | Status | Evidence |
+|---|---|---|---|
+| 1 | Feature complete | Met | Every section in the table of contents has normative text. No open change adds a required field. |
+| 2 | One production implementation | Met | `https://api.aport.io/.well-known/oap/` returned `oap_version: "1.0"`, 21 `supported_capabilities`, and `jwks_uri: https://aport.io/.well-known/oap/jwks.json` on 2026-09-24; that JWKS serves one Ed25519 key, `kid: reg-2025-01`. Source: `functions/` in this repository. |
+| 3 | Conformance suite passes against the current registry | Not met | The suite exists at `spec/conformance` but its cases use the pre-rename ids `payments.refunds.v1` and `data.export.v1`. On 2026-09-24 `node test-runner.js` passed 5 of 5 (it does not check pack ids); `tsx src/runner.ts` failed 5 of 5 with "Unknown policy pack". Only 2 of 22 packs have cases. |
+| 4 | Every pack listed with status, every pack has a README | Partly met | All 22 packs are in capability-registry.md with status. Four have no README: `data.file.read.v1`, `data.file.write.v1`, `web.browser.v1`, `web.fetch.v1`. |
+| 5 | Security review of the specification text | Partly met | Implementation reviews exist: `SECURITY_FIXES_APPLIED.md` (2025-11-18), `SECURITY_AUDIT_POLICY_VERIFY.md` (2026-02-17, internal attacker-style review of the verify endpoint), `docs/PASSPORT_DIGEST_CORRECTION_2026-09-21.md`. Adversarial evidence: the APort Vault CTF, 2026-03-06 to 03-11, 4,437 authorization decisions on transfers, 879 attempts at the $5,000 level with 0 wins (figures from the maintainers' own analytics, `blog/aport-vault-ctf-bounty-results.md`; not independently audited). No review of the spec text by an outside party. |
+| 6 | Deprecation policy in force | Not met | The policy (12 months) is written, but the 2025-10-08 rename removed four pack ids with no notice period and no alias. |
+
+Integration evidence, for context rather than as a criterion: the aporthq/aport-agent-guardrails README (fetched 2026-09-24) lists 13 surfaces, 11 shipped (Claude Code, Cursor, GitHub Repository Guard, OpenClaw, LangChain/LangGraph, CrewAI, DeerFlow, n8n, Codex CLI, Gemini CLI, Goose) and 2 planned or gated (VoltAgent, opencode). All are maintained by the same organization as the hosted verifier, so they do not count as independent implementations.
+
+### Final exit checklist
+
+| # | Criterion | Status |
+|---|---|---|
+| 1 | Two independent implementations pass the suite | Not met. One implementation (APort). `spec/integrations/shield` and `clawmoat` are adapters, not verifiers. |
+| 2 | Suite covers every registered pack, both runners agree | Not met (see entry item 3). |
+| 3 | Open defects closed | Not met; see below. |
+| 4 | Review window elapsed, issues resolved | Not started. |
+| 5 | Outside security review of the text | Not met. |
+| 6 | Deprecation policy in force for a full period | Not met. |
+| 7 | Git tag exists, spec URL serves it | Not met. aporthq/aport-spec has 38 commits and no tags or releases. |
+
+### Open defects
+
+1. `decision-schema.json` cannot be satisfied: `required` lists `passport_id`, `issued_at`, `expires_at`, none of which are in `properties`, with `additionalProperties: false`. Both files in `examples/` fail validation. This document lists `agent_id`, `created_at`, `expires_in`.
+2. `passport-schema.json` omits `did`, `expires_at`, `never_expires` and sets `additionalProperties: false`, so a passport with those optional fields fails validation.
+3. `spec/conformance/cases/` uses pre-rename pack ids (entry item 3).
+4. Capability names differ between the packs and the discovery document for `code.release.publish.v1` (`repo.release`) and `code.repository.merge.v1` (`repo.pr.create`, `repo.merge`).
+5. Four packs have no README (entry item 4).
+
+Fixing 1 and 2 changes what a validator accepts. The text is a Working Draft, so nothing constrains the fix; it must still be recorded under Fixed in CHANGELOG.md. Defects 3 and 5 are entry criteria 3 and 4, so closing them is part of what moves the status.
 
 ## Table of Contents
 
@@ -58,7 +101,7 @@ A passport represents either a template (canonical agent identity) or an instanc
 - `assurance_level` (enum): L0, L1, L2, L3, L4KYC, L4FIN
 - `status` (enum): draft, active, suspended, or revoked
 - `capabilities` (array): List of granted capabilities with optional parameters
-- `limits` (object): Operational limits per capability
+- `limits` (object): Operational limits per capability, keyed by capability id (for example `limits["payments.charge"]`). Limits are a property of the passport; a verification request cannot supply or override them. Most limit values are scalars or string arrays. `deliverable.task.complete` is the one registered capability whose limits include an array of objects, `acceptance_criteria: [{ id, description }]` (see the capability registry).
 - `regions` (array): Authorized geographic regions
 - `created_at` (ISO 8601): Creation timestamp
 - `updated_at` (ISO 8601): Last update timestamp
@@ -251,11 +294,10 @@ Keys are resolved using the following format:
 
 ### Specification Versioning
 
-### Specification Versioning
-
-- Uses SemVer: `oap/1.0`, `oap/1.1`, etc.
-- Major versions may introduce breaking changes
-- Minor versions add backward-compatible features
+- The document revision follows SemVer (`1.0.0`, `1.1.0`, `2.0.0`); the wire string `spec_version` carries only major.minor (`oap/1.0`, `oap/1.1`)
+- Patch revisions and maturity changes (Working Draft, Candidate, Final) do not change the wire string
+- Major versions may introduce breaking changes; minor versions add backward-compatible features
+- What a minor bump means for validators, the maturity ladder, and the release steps are in [VERSION.md](./VERSION.md)
 
 ### Policy Pack Versioning
 
@@ -313,7 +355,7 @@ Evaluation rules provide declarative policy logic without requiring manual code.
 {
   "name": "amount_within_limit",
   "type": "expression",
-  "condition": "context.amount <= limits.payments.charge.max_per_tx",
+  "condition": "context.amount <= limits.max_per_tx",
   "deny_code": "oap.limit_exceeded",
   "description": "Transaction amount must not exceed limit"
 }
@@ -333,7 +375,7 @@ Evaluation rules provide declarative policy logic without requiring manual code.
 Expression rules have access to:
 - `passport` - The full passport object (agent_id, status, capabilities, limits, etc.)
 - `context` - The action context provided in the verification request
-- `limits` - Shorthand for `passport.limits`
+- `limits` - The block for the policy's primary capability when the passport has one, otherwise `passport.limits` whole. `evaluateCustomRules` looks up `passport.limits[primaryCapability]`, falling back to the dotted path `passport.limits.payments.charge`, and only if neither resolves to an object does it leave `limits` pointing at `passport.limits`. So on a passport that carries `limits["payments.charge"]`, `limits.max_per_tx` reads `passport.limits["payments.charge"].max_per_tx`; on one whose limit fields sit at the top level, the same expression reads `passport.limits.max_per_tx`. Packs in this repository use both spellings for that reason, and `passport.limits...` spelled out in full is unambiguous either way. Never populated from `context`.
 - `helpers` - Safe helper methods (array/string operations, comparisons)
 
 Expressions MUST NOT contain:
@@ -426,11 +468,13 @@ Custom validators MUST be:
 
 ### Test Vectors
 
-Conformance test cases are provided in the `/conformance` directory with:
+Conformance test cases are provided in `spec/conformance` (published as the `conformance/` directory of aporthq/aport-spec) with:
 - Passport examples
 - Context data
 - Expected decisions
 - Signature verification tests
+
+Per-pack fixtures also live in `policies/<pack>/tests/` for six packs. The state of the suite on 2026-09-24 is recorded in the Status section above and in [conformance.md](./conformance.md).
 
 ## References
 

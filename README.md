@@ -160,7 +160,7 @@ All specifications are released under the MIT License. See [LICENSE](./LICENSE) 
 *The runtime trust rail for AI agents*
 
 [![OAP Version](https://img.shields.io/badge/OAP-v1.0.0-blue.svg)](./oap/VERSION.md)
-[![Specification Status](https://img.shields.io/badge/Status-Stable-green.svg)](./oap/oap-spec.md)
+[![Specification Status](https://img.shields.io/badge/Status-Working%20Draft-orange.svg)](./oap/oap-spec.md)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
 </div>
