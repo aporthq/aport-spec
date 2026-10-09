@@ -3,6 +3,15 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Open Agent Passport",
   "description": "Schema for Open Agent Passport (OAP) v1.0 passport objects",
+  "definitions": {
+    "authorizationScopePath": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "pattern": "^(?!(?:__proto__|prototype|constructor)(?:\\.|$))[a-zA-Z_][a-zA-Z0-9_]*(?:\\.(?!(?:__proto__|prototype|constructor)(?:\\.|$))[a-zA-Z_][a-zA-Z0-9_]*){0,5}$",
+      "description": "Own-property path relative to the server-constructed context root, with 1-6 dot-separated identifier components. Prototype-related components, array indexes and wildcards are not supported."
+    }
+  },
   "type": "object",
   "required": [
     "passport_id",
@@ -108,6 +117,45 @@
       "type": "object",
       "description": "Operational limits for the agent",
       "properties": {
+        "authorization_scope": {
+          "type": "object",
+          "description": "Optional scope constraints enforced by the hosted policy verification endpoint. Matching bindings require a passport-owner backend API key and backend-derived requester and resource scope. Absence preserves existing behavior. Local passport evaluation is unsigned simulation, not authorization evidence.",
+          "required": ["bindings"],
+          "additionalProperties": false,
+          "properties": {
+            "bindings": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 16,
+              "description": "Every binding selecting the evaluated policy must pass. A valid configuration with no matching binding leaves that policy unchanged.",
+              "items": {
+                "type": "object",
+                "required": ["policies", "subject_path", "resource_path"],
+                "additionalProperties": false,
+                "description": "At runtime, paths must differ and resolve to nonempty scope IDs. The subject is a string; the resource is a string or 1-1000 strings, all equal to the subject. IDs are at most 256 characters, have no surrounding whitespace, and exclude ASCII control characters. This draft-07 schema validates configuration shape; runtime additionally rejects identical subject and resource paths.",
+                "properties": {
+                  "policies": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 32,
+                    "description": "Exact versioned policy IDs, or * for every policy. This field is required; partial wildcards are not supported.",
+                    "items": {
+                      "type": "string",
+                      "maxLength": 150,
+                      "pattern": "^(?:\\*|[a-z][a-z0-9_-]*(?:\\.[a-z][a-z0-9_-]*)*\\.v[1-9][0-9]*)$"
+                    }
+                  },
+                  "subject_path": {
+                    "$ref": "#/definitions/authorizationScopePath"
+                  },
+                  "resource_path": {
+                    "$ref": "#/definitions/authorizationScopePath"
+                  }
+                }
+              }
+            }
+          }
+        },
         "finance.payment.refund": {
           "type": "object",
           "properties": {
